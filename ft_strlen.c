@@ -6,13 +6,15 @@
 /*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/21 13:17:27 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/21 13:25:33 by dneves-d         ###   ########.fr       */
+/*   Updated: 2026/05/21 14:11:51 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-int	ft_strlen(const char *str)
+#include "libft.h"
+
+size_t	ft_strlen(const char *str)
 {
-	int	strlen;
+	size_t	strlen;
 
 	strlen = 0;
 	while (*str)
@@ -21,4 +23,13 @@ int	ft_strlen(const char *str)
 		str++;
 	}
 	return (strlen);
+}
+
+#include <stdio.h>
+int main() {
+    char myStr[] = "Hello Daniel";
+
+    printf("Length of string: %ld\n", ft_strlen(myStr));
+
+    return 0;
 }
