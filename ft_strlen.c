@@ -1,18 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isprint.c                                       :+:      :+:    :+:   */
+/*   ft_strlen.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/21 13:03:17 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/21 13:27:56 by dneves-d         ###   ########.fr       */
+/*   Created: 2026/05/21 13:17:27 by dneves-d          #+#    #+#             */
+/*   Updated: 2026/05/21 13:25:33 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-int	ft_isprint(int c)
+int	ft_strlen(const char *str)
 {
-	if (!(c < 32))
-		return (1);
-	return (0);
+	int	strlen;
+
+	strlen = 0;
+	while (*str)
+	{
+		strlen++;
+		str++;
+	}
+	return (strlen);
 }
