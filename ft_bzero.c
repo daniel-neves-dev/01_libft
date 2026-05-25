@@ -1,26 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strlen.c                                        :+:      :+:    :+:   */
+/*   ft_bzero.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/21 13:17:27 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/25 09:24:20 by dneves-d         ###   ########.fr       */
+/*   Created: 2026/05/25 10:00:51 by dneves-d          #+#    #+#             */
+/*   Updated: 2026/05/25 10:37:03 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-size_t	ft_strlen(const char *str)
+void	ft_bzero(void *s, size_t number)
 {
-	size_t	strlen;
+	size_t	i;
 
-	strlen = 0;
-	while (*str)
+	i = 0;
+	while (i < number)
 	{
-		strlen++;
-		str++;
+		((unsigned char *)(s))[i] = 0;
+		i++;
 	}
-	return (strlen);
 }
