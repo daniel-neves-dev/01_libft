@@ -1,5 +1,5 @@
 NAME = libft.a
-SRCS = ft_strrchr.c ft_strlen.c
+SRCS = ft_strlen.c ft_strncmp.c
 FLAGS = gcc -Wall -Wextra -Werror
 OBJS = $(SRCS:.c=.o)
 
@@ -14,4 +14,4 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 
-re:	fclean all
+re:	fclean
