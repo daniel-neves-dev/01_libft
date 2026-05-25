@@ -1,15 +1,17 @@
 #include <stdio.h>
 #include <string.h>
 
-int main() {
-    char str[] = "Hello World!";
+int main(void) {
+    char destination[20] = "Hello, ";
+    const char *source = "World!";
+    size_t total_length;
 
-    // Shift "World!" left by 6 spaces to overwrite "Hello "
-    // Source: &str[6] ("World!")
-    // Destination: &str[0]
-    // Bytes: 7 (includes the null terminator '\0')
-    memmove(str, str + 6, 7);
+    // sizeof(destination) provides the full buffer size (20)
+    total_length = strlcat(destination, source, sizeof(destination));
 
-    printf("%s\n", str); // Output: World!
-    return 0;
+    printf("Concatenated string: %s\n", destination); // "Hello, World!"
+    printf("Resulting string length: %zu\n", strlen(destination));
+    printf("Total length if space was unlimited: %zu\n", total_length);
+
+    return (0);
 }
