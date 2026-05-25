@@ -6,13 +6,13 @@
 /*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/25 14:59:10 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/25 15:00:02 by dneves-d         ###   ########.fr       */
+/*   Updated: 2026/05/25 15:01:22 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_toupper(int c)
+int	ft_tolower(int c)
 {
 	if (c >= 'A' && c <= 'Z')
 		return (c + 32);
