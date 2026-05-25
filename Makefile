@@ -1,5 +1,5 @@
 NAME = libft.a
-SRCS = ft_strlen.c ft_memchr.c
+SRCS = ft_strlen.c ft_memcmp.c
 FLAGS = gcc -Wall -Wextra -Werror
 OBJS = $(SRCS:.c=.o)
 
