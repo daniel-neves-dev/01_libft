@@ -1,29 +1,23 @@
 #include <stdio.h>
-
-#include <libbsd>
-
-// Note: If you are testing on Linux, you may need to implement your own version
-// or link against libbsd, as strnstr is not standard in glibc.
+#include <stdlib.h>
 
 int main() {
-	const char *haystack = "Apples, Bananas, and Oranges";
+	char str1[] = "   -4256";
+	char str2[] = "123apple";
+	char str3[] = "blue321";
+	char str4[] = "   --4256";
 
-	// Case 1: Match within the length limit
-	char *match1 = strnstr(haystack, "Bananas", 20);
-	if (match1) {
-		printf("Found: %s\n", match1); // Output: "Bananas, and Oranges"
-	} else {
-		printf("Case 1: Not found\n");
-	}
+	int num1 = atoi(str1);
+	int num2 = atoi(str2);
+	int num3 = atoi(str3);
+	int num4 = atoi(str4);
 
-	// Case 2: Substring exists, but falls OUTSIDE the length limit (len = 10)
-	char *match2 = strnstr(haystack, "Bananas", 10);
-	if (match2) {
-		printf("Found: %s\n", match2);
-	} else {
-		printf("Case 2: Not found (Length limit hit before match completed)\n");
-	}
+	printf("String: '%s' -> Integer: %d\n", str1, num1);
+	printf("String: '%s' -> Integer: %d\n", str2, num2);
+	printf("String: '%s' -> Integer: %d\n", str3, num3);
+	printf("String: '%s' -> Integer: %d\n", str4, num4);
 
 	return 0;
 }
+
 
