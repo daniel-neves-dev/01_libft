@@ -1,17 +1,29 @@
 #include <stdio.h>
-#include <string.h>
 
-int main(void) {
-    char destination[20] = "Hello, ";
-    const char *source = "World!";
-    size_t total_length;
+#include <libbsd>
 
-    // sizeof(destination) provides the full buffer size (20)
-    total_length = strlcat(destination, source, sizeof(destination));
+// Note: If you are testing on Linux, you may need to implement your own version
+// or link against libbsd, as strnstr is not standard in glibc.
 
-    printf("Concatenated string: %s\n", destination); // "Hello, World!"
-    printf("Resulting string length: %zu\n", strlen(destination));
-    printf("Total length if space was unlimited: %zu\n", total_length);
+int main() {
+	const char *haystack = "Apples, Bananas, and Oranges";
 
-    return (0);
+	// Case 1: Match within the length limit
+	char *match1 = strnstr(haystack, "Bananas", 20);
+	if (match1) {
+		printf("Found: %s\n", match1); // Output: "Bananas, and Oranges"
+	} else {
+		printf("Case 1: Not found\n");
+	}
+
+	// Case 2: Substring exists, but falls OUTSIDE the length limit (len = 10)
+	char *match2 = strnstr(haystack, "Bananas", 10);
+	if (match2) {
+		printf("Found: %s\n", match2);
+	} else {
+		printf("Case 2: Not found (Length limit hit before match completed)\n");
+	}
+
+	return 0;
 }
+
