@@ -2,21 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
-
-// =============================================================================
-// LIBFT FUNCTION PROTOTYPES (Ensure these match your library)
-// =============================================================================
-int     ft_isalpha(int c);
-int     ft_isdigit(int c);
-int     ft_isalnum(int c);
-int     ft_isascii(int c);
-int     ft_isprint(int c);
-size_t  ft_strlen(const char *s);
-void    *ft_memset(void *b, int c, size_t len);
-void    ft_bzero(void *s, size_t n);
-void    *ft_memcpy(void *dst, const void *src, size_t n);
-void    *ft_memmove(void *dst, const void *src, size_t len);
-int     ft_memcmp(const void *s1, const void *s2, size_t n);
+#include "libft.h"
 
 // =============================================================================
 // MEMORY TRACKING ENGINE
@@ -226,6 +212,40 @@ void    eval_memmove_overlap(const char *test_name, int test_num,
     int ret_match = (ret_user == user_dest && ret_std == std_dest);
 
     print_result(test_name, test_num, (mem_match && ret_match));
+}
+
+void    eval_strlcpy(const char *test_name, int test_num, const char *src, size_t size, size_t buffer_size)
+{
+    char    *user_dest = malloc(buffer_size);
+    char    *std_dest = malloc(buffer_size);
+
+    // Fill buffers with a visible baseline character to track exact modifications
+    memset(user_dest, 'A', buffer_size);
+    memset(std_dest, 'A', buffer_size);
+
+    // Call both functions and capture their returns
+    size_t user_ret = ft_strlcpy(user_dest, src, size);
+
+    // Note: Standard strlcpy is available via <string.h> on macOS/BSD.
+    // On Linux, you might need to compile with `-lbsd` or use this explicit behavioral twin:
+    size_t std_ret = strlen(src);
+    if (size > 0)
+    {
+        size_t copy_len = (std_ret >= size) ? size - 1 : std_ret;
+        memcpy(std_dest, src, copy_len);
+        std_dest[copy_len] = '\0';
+    }
+
+    // 1. Check if the return values (intended lengths) match perfectly
+    int ret_match = (user_ret == std_ret);
+
+    // 2. Check if the modified destination memory matches perfectly up to the safety buffer limit
+    int mem_match = (memcmp(user_dest, std_dest, buffer_size) == 0);
+
+    print_result(test_name, test_num, (ret_match && mem_match));
+
+    free(user_dest);
+    free(std_dest);
 }
 
 // =============================================================================
@@ -472,6 +492,43 @@ void test_memmove(void)
                          std_ring, std_ring + 2, std_ring + 7, 12, 50);
 }
 
+void test_strlcpy(void)
+{
+    printf("--- TESTING ft_strlcpy ---\n");
+
+    // Standard baseline validations
+    eval_strlcpy("Copy normal string with plenty of space", 1, "Hello World", 20, 20);
+    eval_strlcpy("Copy string matching exact buffer capacity", 2, "12345", 6, 6);
+    eval_strlcpy("Copy from an empty string source", 3, "", 10, 10);
+    eval_strlcpy("Copy into a destination with size 1 (NUL only)", 4, "Testing", 1, 10);
+
+    // [MEDIUM LEVEL] 5 Difficult Tests
+    eval_strlcpy("Medium 1: Truncation check (Size smaller than src)", 5, "The quick brown fox", 10, 25);
+    eval_strlcpy("Medium 2: Size parameter is exactly 0 (Must do nothing)", 6, "Don't copy me", 0, 15);
+    eval_strlcpy("Medium 3: Massive source string into tiny size ceiling", 7, "This is a very long string that will be heavily truncated", 5, 10);
+    eval_strlcpy("Medium 4: Source is single character, destination size is 2", 8, "A", 2, 5);
+    eval_strlcpy("Medium 5: Size matches src length exactly (No room for NUL)", 9, "Hello", 5, 10);
+
+    // [HARD LEVEL] 5 Difficult Tests
+    eval_strlcpy("Hard 1: Size parameter vastly exceeds actual buffer allocations", 10, "Safe", 5, 5);
+    eval_strlcpy("Hard 2: Source string with an embedded null terminator", 11, "Look\0Hidden", 10, 15);
+    eval_strlcpy("Hard 3: Destination size parameter is larger than source string length", 12, "Short", 15, 20);
+
+    // Hard 4: Guard byte integrity tracking directly after target space
+    char user_guard[6] = "AAAAA";
+    char std_guard[6] = "AAAAA";
+    ft_strlcpy(user_guard, "B", 3);
+    // Explicit simulation of standard behavior: copy "B", add '\0', leave remainder untouched
+    std_guard[0] = 'B'; std_guard[1] = '\0';
+    print_result("Hard 4: Strlcpy preservation of surrounding memory blocks", 13, (memcmp(user_guard, std_guard, 6) == 0));
+
+    // Hard 5: Maximum allocation capacity edge limits
+    char dynamic_src[1001];
+    memset(dynamic_src, 'b', 1000);
+    dynamic_src[1000] = '\0';
+    eval_strlcpy("Hard 5: Heavy payload 1000-char calculation block", 14, dynamic_src, 50, 100);
+}
+
 // =============================================================================
 // MAIN EXECUTION RUNNER
 // =============================================================================
@@ -497,6 +554,8 @@ int main(void)
     printf("--------------------------\n\n");
     test_memmove();
     printf("--------------------------\n\n");
+	test_strlcpy();
+	printf("--------------------------\n\n");
 
     printf("\033[34mALL SUITES EXECUTED SUCCESSFULLY.\033[0m\n");
     return (0);
