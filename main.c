@@ -60,6 +60,15 @@ void	eval_isprint(const char *test_name, int test_num, int c)
 	print_result(test_name, test_num, ((user_res != 0) == (std_res != 0)));
 }
 
+// Evaluation function for ft_strlen
+void	eval_strlen(const char *test_name, int test_num, const char *s)
+{
+	size_t	user_res = ft_strlen(s);
+	size_t	std_res = ft_strlen(s);
+
+	print_result(test_name, test_num, (user_res == std_res));
+}
+
 int	main(void)
 {
 	// ==========================================
@@ -150,5 +159,27 @@ int	main(void)
 	eval_isprint("Below lower boundary", 8, 31);   // ASCII 31: Unit Separator (control char)
 	eval_isprint("Upper boundary: Tilde ~", 9, '~'); // ASCII 126: The last printable char
 	eval_isprint("Above upper boundary: DEL", 10, 127); // ASCII 127: Control character (Delete)
+
+	printf("--------------------------\n");
+
+	// ==========================================
+	// 6. TESTING FT_STRLEN
+	// ==========================================
+	printf("--- Testing ft_strlen ---\n");
+	// === 3 EASY TESTS (Standard visible strings) ===
+	eval_strlen("Normal word", 1, "Hello");
+	eval_strlen("Short character", 2, "a");
+	eval_strlen("Long standard sentence", 3, "The quick brown fox jumps over the lazy dog.");
+	// === 3 MEDIUM TESTS (Empty and whitespace strings) ===
+	eval_strlen("Empty string", 4, "");
+	eval_strlen("Only spaces", 5, "    ");
+	eval_strlen("Escape characters", 6, "\n\t\r\v\f");
+	// === 4 HARD TESTS (Hidden null bytes, long inputs, special symbols) ===
+	eval_strlen("Embedded null terminator", 7, "Hello\0World");
+	eval_strlen("Special/Symbol characters", 8, "!@#$%^&*()_+=-`~[]\\|';:/.,<>?");
+	eval_strlen("String with numbers", 9, "1234567890");
+	eval_strlen("A fairly long string", 10, "This string contains exactly fifty-four characters...");
+
+	printf("--------------------------\n");
 	return (0);
 }
