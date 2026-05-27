@@ -94,6 +94,26 @@ void	eval_memset(const char *test_name, int test_num, int c, size_t n)
 	print_result(test_name, test_num, (mem_match && ret_match));
 }
 
+// Evaluation function for ft_bzero
+void	eval_bzero(const char *test_name, int test_num, size_t n)
+{
+	// Create two identical buffers filled with 'B' to track modifications
+	char	buffer_user[50];
+	char	buffer_std[50];
+
+	ft_memset(buffer_user, 'B', sizeof(buffer_user));
+	ft_memset(buffer_std, 'B', sizeof(buffer_std));
+
+	// Execute both functions (bzero returns nothing)
+	ft_bzero(buffer_user, n);
+	ft_bzero(buffer_std, n);
+
+	// Verify that the modified memory blocks match perfectly across all 50 bytes
+	int mem_match = (ft_memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
+
+	print_result(test_name, test_num, mem_match);
+}
+
 int	main(void)
 {
 	// ==========================================
@@ -224,6 +244,29 @@ int	main(void)
 	eval_memset("Negative int value (c = -10)", 8, -10, 10);     // Signs shouldn't mess up the byte cast
 	eval_memset("Fill half and check guard bytes", 9, 'Y', 25);  // Checks if bytes 26-50 are untouched
 	eval_memset("Fill with non-printable character 1", 10, 1, 15);
+
+	printf("--------------------------\n");
+
+	// ==========================================
+	// 8. TESTING FT_BZERO
+	// ==========================================
+	printf("--- TESTING ft_bzero ---\n");
+
+	// === 3 EASY TESTS (Standard clearing sizes) ===
+	eval_bzero("Zero out 5 bytes", 1, 5);
+	eval_bzero("Zero out 10 bytes", 2, 10);
+	eval_bzero("Zero out 1 byte", 3, 1);
+
+	// === 3 MEDIUM TESTS (Empty and maximum sizes) ===
+	eval_bzero("Zero out 0 bytes (Edge case)", 4, 0);
+	eval_bzero("Zero out exactly half the buffer", 5, 25);
+	eval_bzero("Zero out the full buffer size", 6, 50);
+
+	// === 4 HARD TESTS (Guard bytes & precision testing) ===
+	eval_bzero("Zero 49 bytes (Check final byte)", 7, 49);  // Checks if byte 50 is strictly left as 'B'
+	eval_bzero("Zero 2 bytes", 8, 2);
+	eval_bzero("Zero out 13 bytes", 9, 13);                 // Tests non-word aligned/odd counts
+	eval_bzero("Zero out 41 bytes", 10, 41);
 
 	printf("--------------------------\n");
 	return (0);
