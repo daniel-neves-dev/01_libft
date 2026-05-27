@@ -2,6 +2,26 @@
 #include <ctype.h>
 #include "libft.h"
 
+#include <string.h> // str
+
+
+/*size_t	ft_strlcpy(char *dest, const char *src, size_t size)
+{
+	size_t	i;
+
+	i = 0;
+	if (size == 0)
+		return (ft_strlen(src));
+	while (i < (size - 1) && src[i])
+	{
+		dest[i] = src[i];
+		i++;
+	}
+	dest[i] = '\0';
+	return (ft_strlen(src));
+}*/
+
+
 // =============================================================================
 // MEMORY TRACKING ENGINE (For detecting leaks in future functions)
 // =============================================================================
@@ -194,6 +214,26 @@ void    eval_memcpy(const char *test_name, int test_num, void *user_dest, const 
     print_result(test_name, test_num, (mem_match && ret_match));
 }
 
+void    eval_memmove(const char *test_name, int test_num, void *user_dest, const void *user_src, void *std_dest, const void *std_src, size_t n, size_t total_size)
+{
+    void    *ret_user;
+    void    *ret_std;
+
+    // Execute both versions
+    ret_user = ft_memmove(user_dest, user_src, n);
+    ret_std = ft_memmove(std_dest, std_src, n);
+
+    // 1. Verify the modified memory blocks match perfectly
+    int mem_match = 1;
+    if (user_dest && std_dest)
+        mem_match = (ft_memcmp(user_dest, std_dest, total_size) == 0);
+
+    // 2. Verify that the returned pointer points exactly to the destination start
+    int ret_match = (ret_user == user_dest && ret_std == std_dest);
+
+    print_result(test_name, test_num, (mem_match && ret_match));
+}
+
 // =============================================================================
 // TEST SUITE WRAPPERS
 // =============================================================================
@@ -356,6 +396,68 @@ void test_memcpy(void)
 
 }
 
+void test_memmove(void)
+{
+    printf("--- TESTING ft_memmove ---\n");
+
+    // Pre-allocated non-overlapping setups for standard tests
+    char user_buf[50];
+    char std_buf[50];
+    char src_buf[50] = "The quick brown fox jumps over the lazy dog.";
+
+    // Pre-allocated overlapping buffers (shared source/destination zones)
+    char user_overlap[50];
+    char std_overlap[50];
+
+    // Test 1: Standard non-overlapping copy (acting like memcpy)
+    ft_memset(user_buf, 'A', 50); ft_memset(std_buf, 'A', 50);
+    eval_memmove("Standard copy (no overlap)", 1, user_buf, src_buf, std_buf, src_buf, 20, 50);
+
+    // Test 2: Size of exactly 1 byte
+    ft_memset(user_buf, 'B', 50); ft_memset(std_buf, 'B', 50);
+    eval_memmove("Move exactly 1 byte", 2, user_buf, "Z", std_buf, "Z", 1, 50);
+
+    // Test 3: Size of 0 bytes (Must change nothing)
+    ft_memset(user_buf, 'C', 50); ft_memset(std_buf, 'C', 50);
+    eval_memmove("Move 0 bytes (Do nothing)", 3, user_buf, src_buf, std_buf, src_buf, 0, 50);
+
+    // Test 4: Copying integer blocks safely
+    int user_ints[5] = {0}; int std_ints[5] = {0};
+    int src_ints[5] = {10, 20, 30, 40, 50};
+    eval_memmove("Move integer array data", 4, user_ints, src_ints, std_ints, src_ints, sizeof(src_ints), sizeof(src_ints));
+
+    // Test 5: Exact destination and source match (src == dest)
+    ft_memset(user_buf, 'D', 50);
+    eval_memmove("Source equals destination pointer", 5, user_buf, user_buf, user_buf, user_buf, 25, 50);
+
+    // Test 6: Critical Overlap - Dest is ahead of Src (dest > src)
+    ft_memset(user_overlap, 0, 50); // Clear buffers entirely first
+    ft_memset(std_overlap, 0, 50);
+    strcpy(user_overlap, "abcdefghijklmnop");
+    strcpy(std_overlap, "abcdefghijklmnop");
+    eval_memmove("Overlap: Dest > Src (Backwards loop)", 6, user_overlap + 5, user_overlap, std_overlap + 5, std_overlap, 10, 50);
+	printf("User buffer: %s\n", user_overlap);
+	printf("Std  buffer: %s\n", std_overlap);
+
+    // Test 7: Critical Overlap - Src is ahead of Dest (src > dest)
+    ft_memset(user_overlap, 0, 50); // RESET buffers so Test 6 doesn't bleed into Test 7!
+    ft_memset(std_overlap, 0, 50);
+    strcpy(user_overlap, "abcdefghijklmnop");
+    strcpy(std_overlap, "abcdefghijklmnop");
+    eval_memmove("Overlap: Src > Dest (Forwards loop)", 7, user_overlap, user_overlap + 5, std_overlap, std_overlap + 5, 10, 50);
+
+    // Test 8: Moving an entire buffer into itself shifted by 1 single byte
+    strcpy(user_overlap, "1234567890");
+    strcpy(std_overlap, "1234567890");
+    eval_memmove("Micro-overlap: Shifted by 1 byte", 8, user_overlap + 1, user_overlap, std_overlap + 1, std_overlap, 9, 15);
+
+    // Test 9: Double NULL pointers with size 0 (Safe exit check)
+    eval_memmove("Double NULL with size 0", 9, NULL, NULL, NULL, NULL, 0, 0);
+
+    // Test 10: Double NULL pointers with non-zero size (Strict Crash Verification)
+    eval_memmove("Double NULL with size 5", 10, NULL, NULL, NULL, NULL, 5, 0);
+}
+
 // =============================================================================
 // MAIN EXECUTION RUNNER
 // =============================================================================
@@ -378,6 +480,8 @@ int main(void)
     test_bzero();
     printf("--------------------------\n\n");
 	test_memcpy();
+	printf("--------------------------\n\n");
+	test_memmove();
 	printf("--------------------------\n\n");
     return (0);
 }
