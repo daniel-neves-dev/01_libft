@@ -1,29 +1,25 @@
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
-#include "libft.h"
-
-#include <string.h> // str
-
-
-/*size_t	ft_strlcpy(char *dest, const char *src, size_t size)
-{
-	size_t	i;
-
-	i = 0;
-	if (size == 0)
-		return (ft_strlen(src));
-	while (i < (size - 1) && src[i])
-	{
-		dest[i] = src[i];
-		i++;
-	}
-	dest[i] = '\0';
-	return (ft_strlen(src));
-}*/
-
+#include <stdlib.h>
 
 // =============================================================================
-// MEMORY TRACKING ENGINE (For detecting leaks in future functions)
+// LIBFT FUNCTION PROTOTYPES (Ensure these match your library)
+// =============================================================================
+int     ft_isalpha(int c);
+int     ft_isdigit(int c);
+int     ft_isalnum(int c);
+int     ft_isascii(int c);
+int     ft_isprint(int c);
+size_t  ft_strlen(const char *s);
+void    *ft_memset(void *b, int c, size_t len);
+void    ft_bzero(void *s, size_t n);
+void    *ft_memcpy(void *dst, const void *src, size_t n);
+void    *ft_memmove(void *dst, const void *src, size_t len);
+int     ft_memcmp(const void *s1, const void *s2, size_t n);
+
+// =============================================================================
+// MEMORY TRACKING ENGINE
 // =============================================================================
 static size_t   g_allocations = 0;
 static size_t   g_freed = 0;
@@ -45,14 +41,12 @@ void    tracked_free(void *ptr)
     }
 }
 
-// Resets counters before starting a specific function test suite
 void    reset_leak_tracker(void)
 {
     g_allocations = 0;
     g_freed = 0;
 }
 
-// Checks if any memory was leaked during the test
 int     check_leaks(void)
 {
     return (g_allocations == g_freed);
@@ -69,7 +63,6 @@ void    print_result(const char *test_name, int test_num, int pass)
         printf("  Test %02d [%s]: \033[31m[KO]\033[0m\n", test_num, test_name);
 }
 
-// Structures to data-drive character and string validation tests cleanly
 typedef struct s_char_test {
     const char  *name;
     int         input;
@@ -89,7 +82,6 @@ void    eval_isalpha(const char *test_name, int test_num, int c)
     int user_res = (ft_isalpha(c) != 0);
     int std_res;
 
-    // Hardened Protection: standard isalpha has UB outside 0-127 unless EOF
     if (c < -1 || c > 127)
         std_res = 0;
     else
@@ -127,7 +119,6 @@ void    eval_isalnum(const char *test_name, int test_num, int c)
 void    eval_isascii(const char *test_name, int test_num, int c)
 {
     int user_res = (ft_isascii(c) != 0);
-    // isascii behavior is usually stable, but explicit boundaries match the spec:
     int std_res = (c >= 0 && c <= 127);
 
     print_result(test_name, test_num, (user_res == std_res));
@@ -148,30 +139,26 @@ void    eval_isprint(const char *test_name, int test_num, int c)
 
 void    eval_strlen(const char *test_name, int test_num, const char *s)
 {
-    // FIX: Changed std_res to call standard strlen, not ft_strlen
     size_t  user_res = ft_strlen(s);
-    size_t  std_res = ft_strlen(s);
+    size_t  std_res = strlen(s);
 
     print_result(test_name, test_num, (user_res == std_res));
 }
 
 void    eval_memset(const char *test_name, int test_num, int c, size_t n)
 {
-    char    buffer_user[50];
-    char    buffer_std[50];
+    char    buffer_user[100];
+    char    buffer_std[100];
     void    *ret_user;
     void    *ret_std;
 
-    // Fill buffers with baseline identity values via standard memset
-    ft_memset(buffer_user, 'A', sizeof(buffer_user));
-    ft_memset(buffer_std, 'A', sizeof(buffer_std));
+    memset(buffer_user, 'A', sizeof(buffer_user));
+    memset(buffer_std, 'A', sizeof(buffer_std));
 
     ret_user = ft_memset(buffer_user, c, n);
-    ret_std = ft_memset(buffer_std, c, n);
+    ret_std = memset(buffer_std, c, n);
 
-    int mem_match = (ft_memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
-
-    // FIX: Verify both functions returned their respective starting pointers
+    int mem_match = (memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
     int ret_match = (ret_user == buffer_user && ret_std == buffer_std);
 
     print_result(test_name, test_num, (mem_match && ret_match));
@@ -179,36 +166,32 @@ void    eval_memset(const char *test_name, int test_num, int c, size_t n)
 
 void    eval_bzero(const char *test_name, int test_num, size_t n)
 {
-    char    buffer_user[50];
-    char    buffer_std[50];
+    char    buffer_user[100];
+    char    buffer_std[100];
 
-    ft_memset(buffer_user, 'B', sizeof(buffer_user));
-    ft_memset(buffer_std, 'B', sizeof(buffer_std));
+    memset(buffer_user, 'B', sizeof(buffer_user));
+    memset(buffer_std, 'B', sizeof(buffer_std));
 
     ft_bzero(buffer_user, n);
-    ft_bzero(buffer_std, n);
+    bzero(buffer_std, n);
 
-    int mem_match = (ft_memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
+    int mem_match = (memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
 
     print_result(test_name, test_num, mem_match);
 }
 
-//Test memcpy
 void    eval_memcpy(const char *test_name, int test_num, void *user_dest, const void *user_src, void *std_dest, const void *std_src, size_t n, size_t total_size)
 {
     void    *ret_user;
     void    *ret_std;
 
-    // Execute both versions
     ret_user = ft_memcpy(user_dest, user_src, n);
-    ret_std = ft_memcpy(std_dest, std_src, n);
+    ret_std = memcpy(std_dest, std_src, n);
 
-    // 1. Verify the modified memory blocks match perfectly
     int mem_match = 1;
-    if (user_dest && std_dest)
-        mem_match = (ft_memcmp(user_dest, std_dest, total_size) == 0);
+    if (user_dest && std_dest && total_size > 0)
+        mem_match = (memcmp(user_dest, std_dest, total_size) == 0);
 
-    // 2. Verify that the returned pointer points exactly to the destination start
     int ret_match = (ret_user == user_dest && ret_std == std_dest);
 
     print_result(test_name, test_num, (mem_match && ret_match));
@@ -219,16 +202,27 @@ void    eval_memmove(const char *test_name, int test_num, void *user_dest, const
     void    *ret_user;
     void    *ret_std;
 
-    // Execute both versions
     ret_user = ft_memmove(user_dest, user_src, n);
-    ret_std = ft_memmove(std_dest, std_src, n);
+    ret_std = memmove(std_dest, std_src, n);
 
-    // 1. Verify the modified memory blocks match perfectly
     int mem_match = 1;
-    if (user_dest && std_dest)
-        mem_match = (ft_memcmp(user_dest, std_dest, total_size) == 0);
+    if (user_dest && std_dest && total_size > 0)
+        mem_match = (memcmp(user_dest, std_dest, total_size) == 0);
 
-    // 2. Verify that the returned pointer points exactly to the destination start
+    int ret_match = (ret_user == user_dest && ret_std == std_dest);
+
+    print_result(test_name, test_num, (mem_match && ret_match));
+}
+
+void    eval_memmove_overlap(const char *test_name, int test_num,
+                             void *user_base, void *user_dest, const void *user_src,
+                             void *std_base, void *std_dest, const void *std_src,
+                             size_t n, size_t total_size)
+{
+    void    *ret_user = ft_memmove(user_dest, user_src, n);
+    void    *ret_std = memmove(std_dest, std_src, n);
+
+    int mem_match = (memcmp(user_base, std_base, total_size) == 0);
     int ret_match = (ret_user == user_dest && ret_std == std_dest);
 
     print_result(test_name, test_num, (mem_match && ret_match));
@@ -244,7 +238,11 @@ void test_isalpha(void)
         {"Uppercase A", 'A'}, {"Lowercase z", 'z'}, {"Middle Upper M", 'M'},
         {"Digit 5", '5'}, {"Special Char #", '#'}, {"Space character", ' '},
         {"Null terminator", '\0'}, {"EOF / -1 value", -1}, {"Extended ASCII 200", 200},
-        {"Boundary character `", '`'}, {NULL, 0}
+        {"Boundary character `", '`'},
+
+        // [HARD LEVEL] Test 11: Int Type Overflow/Wrapping limits
+        {"Isalpha extreme: INT_MAX value wrapping", 2147483647},
+        {NULL, 0}
     };
     printf("--- TESTING ft_isalpha ---\n");
     for (int i = 0; tests[i].name != NULL; i++)
@@ -258,6 +256,9 @@ void test_isdigit(void)
         {"Uppercase A NOT digit", 'A'}, {"Lowercase z NOT digit", 'z'},
         {"Special Char / NOT digit", '/'}, {"Null terminator", '\0'},
         {"EOF / -1 value", -1}, {"Extended ASCII 250", 250}, {"Int value of 5", 5},
+
+        // [HARD LEVEL] Test 11: Int Type Underflow/Wrapping limits
+        {"Isdigit extreme: INT_MIN value wrapping", -2147483648},
         {NULL, 0}
     };
     printf("--- TESTING ft_isdigit ---\n");
@@ -271,7 +272,11 @@ void test_isalnum(void)
         {"Uppercase G", 'G'}, {"Lowercase m", 'm'}, {"Digit 3", '3'},
         {"Period / Dot", '.'}, {"Newline \\n", '\n'}, {"Question Mark", '?'},
         {"Null terminator", '\0'}, {"EOF / -1 value", -1}, {"Boundary char @", '@'},
-        {"Boundary char [", '['}, {NULL, 0}
+        {"Boundary char [", '['},
+
+        // [MEDIUM LEVEL] Test 11: Extended ASCII boundary condition
+        {"Isalnum boundary character 128", 128},
+        {NULL, 0}
     };
     printf("--- TESTING ft_isalnum ---\n");
     for (int i = 0; tests[i].name != NULL; i++)
@@ -317,8 +322,15 @@ void test_strlen(void)
         {NULL, NULL}
     };
     printf("--- TESTING ft_strlen ---\n");
-    for (int i = 0; tests[i].name != NULL; i++)
+    int i = 0;
+    for (; tests[i].name != NULL; i++)
         eval_strlen(tests[i].name, i + 1, tests[i].input);
+
+    // [MEDIUM LEVEL] Test 11: Extremely long string block validation
+    char long_str[5001];
+    memset(long_str, 'x', 5000);
+    long_str[5000] = '\0';
+    eval_strlen("Strlen on 5000 character block", i + 1, long_str);
 }
 
 void test_memset(void)
@@ -334,6 +346,12 @@ void test_memset(void)
     eval_memset("Negative int value (c = -10)", 8, -10, 10);
     eval_memset("Fill half and check guard bytes", 9, 'Y', 25);
     eval_memset("Fill with non-printable character 1", 10, 1, 15);
+
+    // [MEDIUM LEVEL] Test 11: Sign extension casting behavior
+    eval_memset("Memset with int value overflow 0x101 (Wraps to 1)", 11, 0x101, 15);
+
+    // [HARD LEVEL] Test 12: Completely negative integer instruction
+    eval_memset("Memset extreme value -1 (Must cast to 255/0xFF)", 12, -1, 20);
 }
 
 void test_bzero(void)
@@ -349,6 +367,11 @@ void test_bzero(void)
     eval_bzero("Zero 2 bytes", 8, 2);
     eval_bzero("Zero out 13 bytes", 9, 13);
     eval_bzero("Zero out 41 bytes", 10, 41);
+
+    // [MEDIUM LEVEL] Test 11: Guard byte preservation directly after target
+    char guard_buffer[6] = {'X', 'X', 'X', 'X', 'X', 'G'};
+    ft_bzero(guard_buffer, 5);
+    print_result("Bzero preservation of subsequent guard byte", 11, (guard_buffer[5] == 'G'));
 }
 
 void test_memcpy(void)
@@ -358,104 +381,95 @@ void test_memcpy(void)
     char std_buf[50];
     char src_buf[50] = "The quick brown fox jumps over the lazy dog.";
 
-    ft_memset(user_buf, 'A', 50); ft_memset(std_buf, 'A', 50);
+    memset(user_buf, 'A', 50); memset(std_buf, 'A', 50);
     eval_memcpy("Copy partial string (15 bytes)", 1, user_buf, src_buf, std_buf, src_buf, 15, 50);
 
     int user_ints[5] = {0}; int std_ints[5] = {0};
     int src_ints[5] = {42, 1337, -1, 24, 99};
     eval_memcpy("Copy integer array (5 ints)", 2, user_ints, src_ints, std_ints, src_ints, sizeof(src_ints), sizeof(src_ints));
 
-    ft_memset(user_buf, 'B', 50); ft_memset(std_buf, 'B', 50);
+    memset(user_buf, 'B', 50); memset(std_buf, 'B', 50);
     eval_memcpy("Copy string with embedded \\0", 3, user_buf, "Hello\0World", std_buf, "Hello\0World", 11, 50);
 
-    ft_memset(user_buf, 'C', 50); ft_memset(std_buf, 'C', 50);
+    memset(user_buf, 'C', 50); memset(std_buf, 'C', 50);
     eval_memcpy("Copy minimum size (1 byte)", 4, user_buf, "Z", std_buf, "Z", 1, 50);
 
-    ft_memset(user_buf, 'D', 50);
+    memset(user_buf, 'D', 50);
     eval_memcpy("Copy source to itself (Same ptr)", 5, user_buf, user_buf, user_buf, user_buf, 20, 50);
 
-
-    ft_memset(user_buf, 'E', 50); ft_memset(std_buf, 'E', 50);
+    memset(user_buf, 'E', 50); memset(std_buf, 'E', 50);
     eval_memcpy("Size of 0 bytes (Do nothing)", 6, user_buf, src_buf, std_buf, src_buf, 0, 50);
 
     char src_ctrl[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-    ft_memset(user_buf, 0, 50); ft_memset(std_buf, 0, 50);
+    memset(user_buf, 0, 50); memset(std_buf, 0, 50);
     eval_memcpy("Copy raw control bytes", 7, user_buf, src_ctrl, std_buf, src_ctrl, 10, 50);
 
-    ft_memset(user_buf, 'F', 50); ft_memset(std_buf, 'F', 50);
+    memset(user_buf, 'F', 50); memset(std_buf, 'F', 50);
     eval_memcpy("Copy full buffer size (50 bytes)", 8, user_buf, src_buf, std_buf, src_buf, 50, 50);
     eval_memcpy("Double NULL with size 0", 9, NULL, NULL, NULL, NULL, 0, 0);
+    printf("  Test 10 [Double NULL with size 5]: \033[33m[SKIPPED BY DESIGN - WILL CRASH OTHERWISE]\033[0m\n");
 
-	//Test 10: Double NULL with non-zero size (Strict Verification)
-    // NOTE: In standard C, memcpy(NULL, NULL, 5) results in a crash/SegFault.
-    // Moulinette expects your code to crash here too! If you protected your ft_memcpy
-    // with "if (!dest || !src) return NULL", you will pass this test but FAIL Moulinette.
-    // Uncomment the line below ONLY if your code deliberately lets it segfault or if you want to verify it.
-    eval_memcpy("Double NULL with size 5 (Should Crash)", 10, NULL, NULL, NULL, NULL, 5, 0);
-    //printf("  Test 10 [Double NULL with size 5]: \033[33m[SKIPPED - Verified by design]\033[0m\n");
+    // [MEDIUM LEVEL] Test 11: Block copies matching complete struct alignments
+    struct s_box { char a; int b; char c; } src_box = {'A', 42, 'Z'}, user_box, std_box;
+    ft_memcpy(&user_box, &src_box, sizeof(struct s_box));
+    memcpy(&std_box, &src_box, sizeof(struct s_box));
+    print_result("Memcpy matching complete memory structures", 11, (memcmp(&user_box, &std_box, sizeof(struct s_box)) == 0));
 
+    // [HARD LEVEL] Test 12: Signed/Unsigned byte conversion preservation check
+    unsigned char src_bytes[4] = {255, 128, 0, 42};
+    unsigned char user_bytes[4] = {0};
+    unsigned char std_bytes[4] = {0};
+    ft_memcpy(user_bytes, src_bytes, 4);
+    memcpy(std_bytes, src_bytes, 4);
+    print_result("Memcpy extreme: Signed/Unsigned preservation loop", 12, (memcmp(user_bytes, std_bytes, 4) == 0));
 }
 
 void test_memmove(void)
 {
     printf("--- TESTING ft_memmove ---\n");
-
-    // Pre-allocated non-overlapping setups for standard tests
     char user_buf[50];
     char std_buf[50];
     char src_buf[50] = "The quick brown fox jumps over the lazy dog.";
-
-    // Pre-allocated overlapping buffers (shared source/destination zones)
     char user_overlap[50];
     char std_overlap[50];
 
-    // Test 1: Standard non-overlapping copy (acting like memcpy)
-    ft_memset(user_buf, 'A', 50); ft_memset(std_buf, 'A', 50);
+    memset(user_buf, 'A', 50); memset(std_buf, 'A', 50);
     eval_memmove("Standard copy (no overlap)", 1, user_buf, src_buf, std_buf, src_buf, 20, 50);
 
-    // Test 2: Size of exactly 1 byte
-    ft_memset(user_buf, 'B', 50); ft_memset(std_buf, 'B', 50);
+    memset(user_buf, 'B', 50); memset(std_buf, 'B', 50);
     eval_memmove("Move exactly 1 byte", 2, user_buf, "Z", std_buf, "Z", 1, 50);
 
-    // Test 3: Size of 0 bytes (Must change nothing)
-    ft_memset(user_buf, 'C', 50); ft_memset(std_buf, 'C', 50);
+    memset(user_buf, 'C', 50); memset(std_buf, 'C', 50);
     eval_memmove("Move 0 bytes (Do nothing)", 3, user_buf, src_buf, std_buf, src_buf, 0, 50);
 
-    // Test 4: Copying integer blocks safely
     int user_ints[5] = {0}; int std_ints[5] = {0};
     int src_ints[5] = {10, 20, 30, 40, 50};
     eval_memmove("Move integer array data", 4, user_ints, src_ints, std_ints, src_ints, sizeof(src_ints), sizeof(src_ints));
 
-    // Test 5: Exact destination and source match (src == dest)
-    ft_memset(user_buf, 'D', 50);
+    memset(user_buf, 'D', 50);
     eval_memmove("Source equals destination pointer", 5, user_buf, user_buf, user_buf, user_buf, 25, 50);
 
-    // Test 6: Critical Overlap - Dest is ahead of Src (dest > src)
-    ft_memset(user_overlap, 0, 50); // Clear buffers entirely first
-    ft_memset(std_overlap, 0, 50);
-    strcpy(user_overlap, "abcdefghijklmnop");
-    strcpy(std_overlap, "abcdefghijklmnop");
-    eval_memmove("Overlap: Dest > Src (Backwards loop)", 6, user_overlap + 5, user_overlap, std_overlap + 5, std_overlap, 10, 50);
-	printf("User buffer: %s\n", user_overlap);
-	printf("Std  buffer: %s\n", std_overlap);
+    memset(user_overlap, 0, 50); memset(std_overlap, 0, 50);
+    strcpy(user_overlap, "abcdefghijklmnop"); strcpy(std_overlap, "abcdefghijklmnop");
+    eval_memmove_overlap("Overlap: Dest > Src (Backwards)", 6, user_overlap, user_overlap + 5, user_overlap, std_overlap, std_overlap + 5, std_overlap, 10, 50);
 
-    // Test 7: Critical Overlap - Src is ahead of Dest (src > dest)
-    ft_memset(user_overlap, 0, 50); // RESET buffers so Test 6 doesn't bleed into Test 7!
-    ft_memset(std_overlap, 0, 50);
-    strcpy(user_overlap, "abcdefghijklmnop");
-    strcpy(std_overlap, "abcdefghijklmnop");
-    eval_memmove("Overlap: Src > Dest (Forwards loop)", 7, user_overlap, user_overlap + 5, std_overlap, std_overlap + 5, 10, 50);
+    memset(user_overlap, 0, 50); memset(std_overlap, 0, 50);
+    strcpy(user_overlap, "abcdefghijklmnop"); strcpy(std_overlap, "abcdefghijklmnop");
+    eval_memmove_overlap("Overlap: Src > Dest (Forwards)", 7, user_overlap, user_overlap, user_overlap + 5, std_overlap, std_overlap, std_overlap + 5, 10, 50);
 
-    // Test 8: Moving an entire buffer into itself shifted by 1 single byte
-    strcpy(user_overlap, "1234567890");
-    strcpy(std_overlap, "1234567890");
-    eval_memmove("Micro-overlap: Shifted by 1 byte", 8, user_overlap + 1, user_overlap, std_overlap + 1, std_overlap, 9, 15);
+    memset(user_overlap, 0, 50); memset(std_overlap, 0, 50);
+    strcpy(user_overlap, "1234567890"); strcpy(std_overlap, "1234567890");
+    eval_memmove_overlap("Micro-overlap: Shifted by 1 byte", 8, user_overlap, user_overlap + 1, user_overlap, std_overlap, std_overlap + 1, std_overlap, 9, 15);
 
-    // Test 9: Double NULL pointers with size 0 (Safe exit check)
     eval_memmove("Double NULL with size 0", 9, NULL, NULL, NULL, NULL, 0, 0);
+    printf("  Test 10 [Double NULL with size 5]: \033[33m[SKIPPED BY DESIGN - WILL CRASH OTHERWISE]\033[0m\n");
 
-    // Test 10: Double NULL pointers with non-zero size (Strict Crash Verification)
-    eval_memmove("Double NULL with size 5", 10, NULL, NULL, NULL, NULL, 5, 0);
+    // [HARD LEVEL] Test 11: Complex Ring Overlap (Tails overlapping head)
+    char user_ring[50] = "12345678901234567890";
+    char std_ring[50] = "12345678901234567890";
+    eval_memmove_overlap("Memmove extreme: Loop backwards with overlapping tails", 11,
+                         user_ring, user_ring + 2, user_ring + 7,
+                         std_ring, std_ring + 2, std_ring + 7, 12, 50);
 }
 
 // =============================================================================
@@ -479,9 +493,11 @@ int main(void)
     printf("--------------------------\n\n");
     test_bzero();
     printf("--------------------------\n\n");
-	test_memcpy();
-	printf("--------------------------\n\n");
-	test_memmove();
-	printf("--------------------------\n\n");
+    test_memcpy();
+    printf("--------------------------\n\n");
+    test_memmove();
+    printf("--------------------------\n\n");
+
+    printf("\033[34mALL SUITES EXECUTED SUCCESSFULLY.\033[0m\n");
     return (0);
 }
