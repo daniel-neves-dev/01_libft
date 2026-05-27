@@ -114,6 +114,31 @@ void	eval_bzero(const char *test_name, int test_num, size_t n)
 	print_result(test_name, test_num, mem_match);
 }
 
+// Evaluation function for ft_memcpy (Fixed: removed unused src_len)
+/*void	eval_memcpy(const char *test_name, int test_num, const void *src, size_t n)
+{
+	char	dest_user[50];
+	char	dest_std[50];
+	void	*ret_user;
+	void	*ret_std;
+
+	// Fill destination buffers with garbage ('G') to track partial copies and overflows
+	memset(dest_user, 'G', sizeof(dest_user));
+	memset(dest_std, 'G', sizeof(dest_std));
+
+	// Execute both functions
+	ret_user = ft_memcpy(dest_user, src, n);
+	ret_std = memcpy(dest_std, src, n);
+
+	// 1. Verify destination buffers match entirely across all 50 bytes
+	int mem_match = (memcmp(dest_user, dest_std, sizeof(dest_user)) == 0);
+
+	// 2. Verify that the returned pointer points strictly to the start of dest
+	int ret_match = (ret_user == dest_user);
+
+	print_result(test_name, test_num, (mem_match && ret_match));
+}*/
+
 int	main(void)
 {
 	// ==========================================
@@ -269,5 +294,28 @@ int	main(void)
 	eval_bzero("Zero out 41 bytes", 10, 41);
 
 	printf("--------------------------\n");
+
+	// ==========================================
+	// 9. TESTING FT_MEMCPY
+	// ==========================================
+	/*printf("--- TESTING ft_memcpy ---\n");
+
+	// === 3 EASY TESTS (Basic full-string copies) ===
+	eval_memcpy("Copy basic string", 1, "Hello", 6, 6);
+	eval_memcpy("Copy single character", 2, "X", 2, 2);
+	eval_memcpy("Copy short sentence", 3, "42 Paris", 9, 9);
+
+	// === 3 MEDIUM TESTS (Partial copies, zero sizes) ===
+	eval_memcpy("Copy 0 bytes (Do nothing)", 4, "Don't copy me", 14, 0);
+	eval_memcpy("Partial copy (3 out of 5 bytes)", 5, "ABCDE", 6, 3);
+	eval_memcpy("Copy string with numbers", 6, "1234567890", 11, 11);
+
+	// === 4 HARD TESTS (Null bytes in middle, behavior checks) ===
+	eval_memcpy("Hidden null byte in src", 7, "Look\0Hidden", 12, 12); // Should copy past '\0'!
+	eval_memcpy("Copy integer array as memory", 8, (int[]){42, 1337, 2026}, 12, 12);
+	eval_memcpy("Exact limit check", 9, "Strict Limit Check", 19, 18); // Copy everything minus final null
+	eval_memcpy("Copy non-printable control chars", 10, "\n\t\0\v\f", 6, 6);
+
+	printf("--------------------------\n");*/
 	return (0);
 }
