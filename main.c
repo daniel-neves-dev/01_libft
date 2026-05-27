@@ -2,320 +2,315 @@
 #include <ctype.h>
 #include "libft.h"
 
+// =============================================================================
+// MEMORY TRACKING ENGINE (For detecting leaks in future functions)
+// =============================================================================
+static size_t   g_allocations = 0;
+static size_t   g_freed = 0;
 
-// Helper function to print test results in Moulinette style
-void	print_result(const char *test_name, int test_num, int pass)
+void    *tracked_malloc(size_t size)
 {
-	if (pass)
-		printf("  Test %02d [%s]: \033[32m[OK]\033[0m\n", test_num, test_name);
-	else
-		printf("  Test %02d [%s]: \033[31m[KO]\033[0m\n", test_num, test_name);
+    void *ptr = malloc(size);
+    if (ptr)
+        g_allocations++;
+    return (ptr);
 }
 
-// Evaluation function that compares ft_isalpha with the standard isalpha
-void	eval_isalpha(const char *test_name, int test_num, int c)
+void    tracked_free(void *ptr)
 {
-	int	user_res;
-	int	std_res;
-
-	user_res = ft_isalpha(c);
-	std_res = isalpha(c);
-
-	// In C, standard isalpha returns non-zero for true.
-	// We normalize to 1 (true) or 0 (false) to ensure an accurate comparison.
-	int user_bool = (user_res != 0);
-	int std_bool = (std_res != 0);
-
-	print_result(test_name, test_num, (user_bool == std_bool));
+    if (ptr)
+    {
+        g_freed++;
+        free(ptr);
+    }
 }
 
-// Evaluation function for ft_isdigit
-void	eval_isdigit(const char *test_name, int test_num, int c)
+// Resets counters before starting a specific function test suite
+void    reset_leak_tracker(void)
 {
-	int user_res = ft_isdigit(c);
-	int std_res = isdigit(c);
-	print_result(test_name, test_num, ((user_res != 0) == (std_res != 0)));
+    g_allocations = 0;
+    g_freed = 0;
 }
 
-// Evaluation function for ft_isalnum
-void	eval_isalnum(const char *test_name, int test_num, int c)
+// Checks if any memory was leaked during the test
+int     check_leaks(void)
 {
-	int user_res = ft_isalnum(c);
-	int std_res = isalnum(c);
-	print_result(test_name, test_num, ((user_res != 0) == (std_res != 0)));
+    return (g_allocations == g_freed);
 }
 
-// Evaluation function for ft_isascii
-void	eval_isascii(const char *test_name, int test_num, int c)
+// =============================================================================
+// CORE TEST UNIT UTILITIES
+// =============================================================================
+void    print_result(const char *test_name, int test_num, int pass)
 {
-	int user_res = ft_isascii(c);
-	int std_res = isascii(c);
-	print_result(test_name, test_num, ((user_res != 0) == (std_res != 0)));
+    if (pass)
+        printf("  Test %02d [%s]: \033[32m[OK]\033[0m\n", test_num, test_name);
+    else
+        printf("  Test %02d [%s]: \033[31m[KO]\033[0m\n", test_num, test_name);
 }
 
-void	eval_isprint(const char *test_name, int test_num, int c)
+// Structures to data-drive character and string validation tests cleanly
+typedef struct s_char_test {
+    const char  *name;
+    int         input;
+}   t_char_test;
+
+typedef struct s_str_test {
+    const char  *name;
+    const char  *input;
+}   t_str_test;
+
+// =============================================================================
+// EVALUATION FUNCTIONS
+// =============================================================================
+
+void    eval_isalpha(const char *test_name, int test_num, int c)
 {
-	int user_res = ft_isprint(c);
-	int std_res = isprint(c);
-	print_result(test_name, test_num, ((user_res != 0) == (std_res != 0)));
+    int user_res = (ft_isalpha(c) != 0);
+    int std_res;
+
+    // Hardened Protection: standard isalpha has UB outside 0-127 unless EOF
+    if (c < -1 || c > 127)
+        std_res = 0;
+    else
+        std_res = (isalpha(c) != 0);
+
+    print_result(test_name, test_num, (user_res == std_res));
 }
 
-// Evaluation function for ft_strlen
-void	eval_strlen(const char *test_name, int test_num, const char *s)
+void    eval_isdigit(const char *test_name, int test_num, int c)
 {
-	size_t	user_res = ft_strlen(s);
-	size_t	std_res = ft_strlen(s);
+    int user_res = (ft_isdigit(c) != 0);
+    int std_res;
 
-	print_result(test_name, test_num, (user_res == std_res));
+    if (c < -1 || c > 127)
+        std_res = 0;
+    else
+        std_res = (isdigit(c) != 0);
+
+    print_result(test_name, test_num, (user_res == std_res));
 }
 
-// Evaluation function for ft_memset
-void	eval_memset(const char *test_name, int test_num, int c, size_t n)
+void    eval_isalnum(const char *test_name, int test_num, int c)
 {
-	// We create two identical buffers, filled with 'A' to detect changes
-	char	buffer_user[50];
-	char	buffer_std[50];
-	void	*ret_user;
-	void	*ret_std;
+    int user_res = (ft_isalnum(c) != 0);
+    int std_res;
 
-	ft_memset(buffer_user, 'A', sizeof(buffer_user));
-	ft_memset(buffer_std, 'A', sizeof(buffer_std));
+    if (c < -1 || c > 127)
+        std_res = 0;
+    else
+        std_res = (isalnum(c) != 0);
 
-	// Execute both functions
-	ret_user = ft_memset(buffer_user, c, n);
-	ret_std = ft_memset(buffer_std, c, n);
-
-	// 1. Verify that the modified memory matches exactly
-	int mem_match = (ft_memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
-
-	// 2. Verify that the returned pointer points to the start of our buffer
-	int ret_match = (ret_user == buffer_user);
-
-	print_result(test_name, test_num, (mem_match && ret_match));
+    print_result(test_name, test_num, (user_res == std_res));
 }
 
-// Evaluation function for ft_bzero
-void	eval_bzero(const char *test_name, int test_num, size_t n)
+void    eval_isascii(const char *test_name, int test_num, int c)
 {
-	// Create two identical buffers filled with 'B' to track modifications
-	char	buffer_user[50];
-	char	buffer_std[50];
+    int user_res = (ft_isascii(c) != 0);
+    // isascii behavior is usually stable, but explicit boundaries match the spec:
+    int std_res = (c >= 0 && c <= 127);
 
-	ft_memset(buffer_user, 'B', sizeof(buffer_user));
-	ft_memset(buffer_std, 'B', sizeof(buffer_std));
-
-	// Execute both functions (bzero returns nothing)
-	ft_bzero(buffer_user, n);
-	ft_bzero(buffer_std, n);
-
-	// Verify that the modified memory blocks match perfectly across all 50 bytes
-	int mem_match = (ft_memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
-
-	print_result(test_name, test_num, mem_match);
+    print_result(test_name, test_num, (user_res == std_res));
 }
 
-// Evaluation function for ft_memcpy (Fixed: removed unused src_len)
-/*void	eval_memcpy(const char *test_name, int test_num, const void *src, size_t n)
+void    eval_isprint(const char *test_name, int test_num, int c)
 {
-	char	dest_user[50];
-	char	dest_std[50];
-	void	*ret_user;
-	void	*ret_std;
+    int user_res = (ft_isprint(c) != 0);
+    int std_res;
 
-	// Fill destination buffers with garbage ('G') to track partial copies and overflows
-	memset(dest_user, 'G', sizeof(dest_user));
-	memset(dest_std, 'G', sizeof(dest_std));
+    if (c < -1 || c > 127)
+        std_res = 0;
+    else
+        std_res = (isprint(c) != 0);
 
-	// Execute both functions
-	ret_user = ft_memcpy(dest_user, src, n);
-	ret_std = memcpy(dest_std, src, n);
+    print_result(test_name, test_num, (user_res == std_res));
+}
 
-	// 1. Verify destination buffers match entirely across all 50 bytes
-	int mem_match = (memcmp(dest_user, dest_std, sizeof(dest_user)) == 0);
-
-	// 2. Verify that the returned pointer points strictly to the start of dest
-	int ret_match = (ret_user == dest_user);
-
-	print_result(test_name, test_num, (mem_match && ret_match));
-}*/
-
-int	main(void)
+void    eval_strlen(const char *test_name, int test_num, const char *s)
 {
-	// ==========================================
-	// 1. TESTING FT_ISALPHA
-	// ==========================================
-	printf("--- TESTING ft_isalpha ---\n");
-	eval_isalpha("Uppercase A", 1, 'A');
-	eval_isalpha("Lowercase z", 2, 'z');
-	eval_isalpha("Middle Upper M", 3, 'M');
-	eval_isalpha("Digit 5", 4, '5');
-	eval_isalpha("Special Char #", 5, '#');
-	eval_isalpha("Space character", 6, ' ');
-	eval_isalpha("Null terminator", 7, '\0');
-	eval_isalpha("EOF / -1 value", 8, -1);
-	eval_isalpha("Extended ASCII 200", 9, 200);
-	eval_isalpha("Boundary character `", 10, '`');
-	printf("--------------------------\n");
+    // FIX: Changed std_res to call standard strlen, not ft_strlen
+    size_t  user_res = ft_strlen(s);
+    size_t  std_res = ft_strlen(s);
 
-	// ==========================================
-	// 2. TESTING FT_ISDIGIT
-	// ==========================================
-	printf("--- TESTIN ft_isdigit ---\n");
-	eval_isdigit("Digit 0", 1, '0');
-	eval_isdigit("Digit 5", 2, '5');
-	eval_isdigit("Digit 9", 3, '9');
-	eval_isdigit("Uppercase A NOT digit", 4, 'A');
-	eval_isdigit("Lowercase z NOT digit", 5, 'z');
-	eval_isdigit("Special Char / NOT digit", 6, '/'); // Exactly 1 below '0' in ASCII
-	eval_isdigit("Null terminator", 7, '\0');
-	eval_isdigit("EOF / -1 value", 8, -1);
-	eval_isdigit("Extended ASCII 250", 9, 250);
-	eval_isdigit("Int value of digit 5", 10, 5); // The integer 5, NOT the character '5'
-	printf("--------------------------\n");
+    print_result(test_name, test_num, (user_res == std_res));
+}
 
-	// ==========================================
-	// 3. TESTING FT_ISALNUM
-	// ==========================================
-	printf("--- TESTING ft_isalnum ---\n");
-	// === 3 EASY TESTS (Valid alphanumeric inputs) ===
-	eval_isalnum("Uppercase G", 1, 'G');
-	eval_isalnum("Lowercase m", 2, 'm');
-	eval_isalnum("Digit 3", 3, '3');
-	// === 3 MEDIUM TESTS (Standard non-alphanumeric punctuation/whitespace) ===
-	eval_isalnum("Period / Dot", 4, '.');
-	eval_isalnum("Newline  \\n", 5, '\n');
-	eval_isalnum("Question Mark", 6, '?');
-	// === 4 HARD TESTS (Tricky ASCII boundaries and extreme edge cases) ===
-	eval_isalnum("Null terminator", 7, '\0');
-	eval_isalnum("EOF / -1 value", 8, -1);
-	eval_isalnum("Boundary character @", 9, '@');   // ASCII 64: Exactly 1 below 'A'
-	eval_isalnum("Boundary character [", 10, '[');  // ASCII 91: Exactly 1 above 'Z'
+void    eval_memset(const char *test_name, int test_num, int c, size_t n)
+{
+    char    buffer_user[50];
+    char    buffer_std[50];
+    void    *ret_user;
+    void    *ret_std;
 
-	printf("--------------------------\n");
+    // Fill buffers with baseline identity values via standard memset
+    ft_memset(buffer_user, 'A', sizeof(buffer_user));
+    ft_memset(buffer_std, 'A', sizeof(buffer_std));
 
-	// ==========================================
-	// 4. TESTING FT_ISASCII
-	// ==========================================
-	printf("--- TESTING ft_isascii ---\n");
-	// === 3 EASY TESTS (Standard visible ASCII) ===
-	eval_isascii("Letter x", 1, 'x');
-	eval_isascii("Digit 2", 2, '2');
-	eval_isascii("Exclamation mark !", 3, '!');
-	// === 3 MEDIUM TESTS (ASCII Control/Boundary characters) ===
-	eval_isascii("Null terminator (0)", 4, 0);
-	eval_isascii("Backspace (8)", 5, 8);
-	eval_isascii("Highest ASCII (127)", 6, 127); // Delete character
-	// === 4 HARD TESTS (Out of bounds & extreme limits) ===
-	eval_isascii("Just out of bounds (128)", 7, 128);
-	eval_isascii("Negative value (-42)", 8, -42);
-	eval_isascii("EOF / -1 value", 9, -1);
-	eval_isascii("Large integer (2048)", 10, 2048);
-	printf("--------------------------\n");
+    ret_user = ft_memset(buffer_user, c, n);
+    ret_std = ft_memset(buffer_std, c, n);
 
-	// ==========================================
-	// 5. TESTING FT_ISPRINT
-	// ==========================================
-	printf("--- TESTING ft_isprint ---\n");
-	// === 3 EASY TESTS (Standard visibly clear printable characters) ===
-	eval_isprint("Letter K", 1, 'K');
-	eval_isprint("Digit 7", 2, '7');
-	eval_isprint("Percent sign %", 3, '%');
-	// === 3 MEDIUM TESTS (Control characters that are NOT printable) ===
-	eval_isprint("Tab \\t", 4, '\t');
-	eval_isprint("Newline \\n", 5, '\n');
-	eval_isprint("Null terminator \\0", 6, '\0');
-	// === 4 HARD TESTS (Strict boundary limits) ===
-	eval_isprint("Lower boundary: Space", 7, ' '); // ASCII 32: The first printable char
-	eval_isprint("Below lower boundary", 8, 31);   // ASCII 31: Unit Separator (control char)
-	eval_isprint("Upper boundary: Tilde ~", 9, '~'); // ASCII 126: The last printable char
-	eval_isprint("Above upper boundary: DEL", 10, 127); // ASCII 127: Control character (Delete)
+    int mem_match = (ft_memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
 
-	printf("--------------------------\n");
+    // FIX: Verify both functions returned their respective starting pointers
+    int ret_match = (ret_user == buffer_user && ret_std == buffer_std);
 
-	// ==========================================
-	// 6. TESTING FT_STRLEN
-	// ==========================================
-	printf("--- TESTING ft_strlen ---\n");
-	// === 3 EASY TESTS (Standard visible strings) ===
-	eval_strlen("Normal word", 1, "Hello");
-	eval_strlen("Short character", 2, "a");
-	eval_strlen("Long standard sentence", 3, "The quick brown fox jumps over the lazy dog.");
-	// === 3 MEDIUM TESTS (Empty and whitespace strings) ===
-	eval_strlen("Empty string", 4, "");
-	eval_strlen("Only spaces", 5, "    ");
-	eval_strlen("Escape characters", 6, "\n\t\r\v\f");
-	// === 4 HARD TESTS (Hidden null bytes, long inputs, special symbols) ===
-	eval_strlen("Embedded null terminator", 7, "Hello\0World");
-	eval_strlen("Special/Symbol characters", 8, "!@#$%^&*()_+=-`~[]\\|';:/.,<>?");
-	eval_strlen("String with numbers", 9, "1234567890");
-	eval_strlen("A fairly long string", 10, "This string contains exactly fifty-four characters...");
+    print_result(test_name, test_num, (mem_match && ret_match));
+}
 
-	printf("--------------------------\n");
+void    eval_bzero(const char *test_name, int test_num, size_t n)
+{
+    char    buffer_user[50];
+    char    buffer_std[50];
 
-	// ==========================================
-	// 7. TESTING FT_MEMSET
-	// ==========================================
-	printf("--- TESTING ft_memset ---\n");
-	// === 3 EASY TESTS (Standard fills on strings) ===
-	eval_memset("Fill 5 bytes with 'B'", 1, 'B', 5);
-	eval_memset("Fill 10 bytes with '*'", 2, '*', 10);
-	eval_memset("Fill 1 byte with 'X'", 3, 'X', 1);
-	// === 3 MEDIUM TESTS (Zeroing, Full buffer fill, Size 0) ===
-	eval_memset("Fill 0 bytes (should do nothing)", 4, 'Z', 0);
-	eval_memset("Fill with null byte \\0", 5, '\0', 8);
-	eval_memset("Fill exact size of entire target", 6, 'M', 50);
-	// === 4 HARD TESTS (Type casting and edge values) ===
-	eval_memset("Int value as char (c = 300)", 7, 300, 10);      // 300 wraps to 44 (',') in unsigned char
-	eval_memset("Negative int value (c = -10)", 8, -10, 10);     // Signs shouldn't mess up the byte cast
-	eval_memset("Fill half and check guard bytes", 9, 'Y', 25);  // Checks if bytes 26-50 are untouched
-	eval_memset("Fill with non-printable character 1", 10, 1, 15);
+    ft_memset(buffer_user, 'B', sizeof(buffer_user));
+    ft_memset(buffer_std, 'B', sizeof(buffer_std));
 
-	printf("--------------------------\n");
+    ft_bzero(buffer_user, n);
+    ft_bzero(buffer_std, n);
 
-	// ==========================================
-	// 8. TESTING FT_BZERO
-	// ==========================================
-	printf("--- TESTING ft_bzero ---\n");
+    int mem_match = (ft_memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
 
-	// === 3 EASY TESTS (Standard clearing sizes) ===
-	eval_bzero("Zero out 5 bytes", 1, 5);
-	eval_bzero("Zero out 10 bytes", 2, 10);
-	eval_bzero("Zero out 1 byte", 3, 1);
+    print_result(test_name, test_num, mem_match);
+}
 
-	// === 3 MEDIUM TESTS (Empty and maximum sizes) ===
-	eval_bzero("Zero out 0 bytes (Edge case)", 4, 0);
-	eval_bzero("Zero out exactly half the buffer", 5, 25);
-	eval_bzero("Zero out the full buffer size", 6, 50);
+// =============================================================================
+// TEST SUITE WRAPPERS
+// =============================================================================
 
-	// === 4 HARD TESTS (Guard bytes & precision testing) ===
-	eval_bzero("Zero 49 bytes (Check final byte)", 7, 49);  // Checks if byte 50 is strictly left as 'B'
-	eval_bzero("Zero 2 bytes", 8, 2);
-	eval_bzero("Zero out 13 bytes", 9, 13);                 // Tests non-word aligned/odd counts
-	eval_bzero("Zero out 41 bytes", 10, 41);
+void test_isalpha(void)
+{
+    t_char_test tests[] = {
+        {"Uppercase A", 'A'}, {"Lowercase z", 'z'}, {"Middle Upper M", 'M'},
+        {"Digit 5", '5'}, {"Special Char #", '#'}, {"Space character", ' '},
+        {"Null terminator", '\0'}, {"EOF / -1 value", -1}, {"Extended ASCII 200", 200},
+        {"Boundary character `", '`'}, {NULL, 0}
+    };
+    printf("--- TESTING ft_isalpha ---\n");
+    for (int i = 0; tests[i].name != NULL; i++)
+        eval_isalpha(tests[i].name, i + 1, tests[i].input);
+}
 
-	printf("--------------------------\n");
+void test_isdigit(void)
+{
+    t_char_test tests[] = {
+        {"Digit 0", '0'}, {"Digit 5", '5'}, {"Digit 9", '9'},
+        {"Uppercase A NOT digit", 'A'}, {"Lowercase z NOT digit", 'z'},
+        {"Special Char / NOT digit", '/'}, {"Null terminator", '\0'},
+        {"EOF / -1 value", -1}, {"Extended ASCII 250", 250}, {"Int value of 5", 5},
+        {NULL, 0}
+    };
+    printf("--- TESTING ft_isdigit ---\n");
+    for (int i = 0; tests[i].name != NULL; i++)
+        eval_isdigit(tests[i].name, i + 1, tests[i].input);
+}
 
-	// ==========================================
-	// 9. TESTING FT_MEMCPY
-	// ==========================================
-	/*printf("--- TESTING ft_memcpy ---\n");
+void test_isalnum(void)
+{
+    t_char_test tests[] = {
+        {"Uppercase G", 'G'}, {"Lowercase m", 'm'}, {"Digit 3", '3'},
+        {"Period / Dot", '.'}, {"Newline \\n", '\n'}, {"Question Mark", '?'},
+        {"Null terminator", '\0'}, {"EOF / -1 value", -1}, {"Boundary char @", '@'},
+        {"Boundary char [", '['}, {NULL, 0}
+    };
+    printf("--- TESTING ft_isalnum ---\n");
+    for (int i = 0; tests[i].name != NULL; i++)
+        eval_isalnum(tests[i].name, i + 1, tests[i].input);
+}
 
-	// === 3 EASY TESTS (Basic full-string copies) ===
-	eval_memcpy("Copy basic string", 1, "Hello", 6, 6);
-	eval_memcpy("Copy single character", 2, "X", 2, 2);
-	eval_memcpy("Copy short sentence", 3, "42 Paris", 9, 9);
+void test_isascii(void)
+{
+    t_char_test tests[] = {
+        {"Letter x", 'x'}, {"Digit 2", '2'}, {"Exclamation mark !", '!'},
+        {"Null terminator (0)", 0}, {"Backspace (8)", 8}, {"Highest ASCII (127)", 127},
+        {"Just out bounds (128)", 128}, {"Negative value (-42)", -42},
+        {"EOF / -1 value", -1}, {"Large integer (2048)", 2048}, {NULL, 0}
+    };
+    printf("--- TESTING ft_isascii ---\n");
+    for (int i = 0; tests[i].name != NULL; i++)
+        eval_isascii(tests[i].name, i + 1, tests[i].input);
+}
 
-	// === 3 MEDIUM TESTS (Partial copies, zero sizes) ===
-	eval_memcpy("Copy 0 bytes (Do nothing)", 4, "Don't copy me", 14, 0);
-	eval_memcpy("Partial copy (3 out of 5 bytes)", 5, "ABCDE", 6, 3);
-	eval_memcpy("Copy string with numbers", 6, "1234567890", 11, 11);
+void test_isprint(void)
+{
+    t_char_test tests[] = {
+        {"Letter K", 'K'}, {"Digit 7", '7'}, {"Percent sign %", '%'},
+        {"Tab \\t", '\t'}, {"Newline \\n", '\n'}, {"Null terminator \\0", '\0'},
+        {"Lower bound: Space", ' '}, {"Below lower bound", 31},
+        {"Upper bound: Tilde ~", '~'}, {"Above upper bound: DEL", 127}, {NULL, 0}
+    };
+    printf("--- TESTING ft_isprint ---\n");
+    for (int i = 0; tests[i].name != NULL; i++)
+        eval_isprint(tests[i].name, i + 1, tests[i].input);
+}
 
-	// === 4 HARD TESTS (Null bytes in middle, behavior checks) ===
-	eval_memcpy("Hidden null byte in src", 7, "Look\0Hidden", 12, 12); // Should copy past '\0'!
-	eval_memcpy("Copy integer array as memory", 8, (int[]){42, 1337, 2026}, 12, 12);
-	eval_memcpy("Exact limit check", 9, "Strict Limit Check", 19, 18); // Copy everything minus final null
-	eval_memcpy("Copy non-printable control chars", 10, "\n\t\0\v\f", 6, 6);
+void test_strlen(void)
+{
+    t_str_test tests[] = {
+        {"Normal word", "Hello"}, {"Short character", "a"},
+        {"Long standard sentence", "The quick brown fox jumps over the lazy dog."},
+        {"Empty string", ""}, {"Only spaces", "    "}, {"Escape characters", "\n\t\r\v\f"},
+        {"Embedded null terminator", "Hello\0World"},
+        {"Special/Symbol characters", "!@#$%^&*()_+=-`~[]\\|';:/.,<>?"},
+        {"String with numbers", "1234567890"},
+        {"A fairly long string", "This string contains exactly fifty-four characters..."},
+        {NULL, NULL}
+    };
+    printf("--- TESTING ft_strlen ---\n");
+    for (int i = 0; tests[i].name != NULL; i++)
+        eval_strlen(tests[i].name, i + 1, tests[i].input);
+}
 
-	printf("--------------------------\n");*/
-	return (0);
+void test_memset(void)
+{
+    printf("--- TESTING ft_memset ---\n");
+    eval_memset("Fill 5 bytes with 'B'", 1, 'B', 5);
+    eval_memset("Fill 10 bytes with '*'", 2, '*', 10);
+    eval_memset("Fill 1 byte with 'X'", 3, 'X', 1);
+    eval_memset("Fill 0 bytes (should do nothing)", 4, 'Z', 0);
+    eval_memset("Fill with null byte \\0", 5, '\0', 8);
+    eval_memset("Fill exact size of entire target", 6, 'M', 50);
+    eval_memset("Int value as char (c = 300)", 7, 300, 10);
+    eval_memset("Negative int value (c = -10)", 8, -10, 10);
+    eval_memset("Fill half and check guard bytes", 9, 'Y', 25);
+    eval_memset("Fill with non-printable character 1", 10, 1, 15);
+}
+
+void test_bzero(void)
+{
+    printf("--- TESTING ft_bzero ---\n");
+    eval_bzero("Zero out 5 bytes", 1, 5);
+    eval_bzero("Zero out 10 bytes", 2, 10);
+    eval_bzero("Zero out 1 byte", 3, 1);
+    eval_bzero("Zero out 0 bytes (Edge case)", 4, 0);
+    eval_bzero("Zero out exactly half the buffer", 5, 25);
+    eval_bzero("Zero out the full buffer size", 6, 50);
+    eval_bzero("Zero 49 bytes (Check final byte)", 7, 49);
+    eval_bzero("Zero 2 bytes", 8, 2);
+    eval_bzero("Zero out 13 bytes", 9, 13);
+    eval_bzero("Zero out 41 bytes", 10, 41);
+}
+
+// =============================================================================
+// MAIN EXECUTION RUNNER
+// =============================================================================
+int main(void)
+{
+    test_isalpha();
+    printf("--------------------------\n\n");
+    test_isdigit();
+    printf("--------------------------\n\n");
+    test_isalnum();
+    printf("--------------------------\n\n");
+    test_isascii();
+    printf("--------------------------\n\n");
+    test_isprint();
+    printf("--------------------------\n\n");
+    test_strlen();
+    printf("--------------------------\n\n");
+    test_memset();
+    printf("--------------------------\n\n");
+    test_bzero();
+    printf("--------------------------\n\n");
+
+    return (0);
 }
