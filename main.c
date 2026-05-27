@@ -69,6 +69,31 @@ void	eval_strlen(const char *test_name, int test_num, const char *s)
 	print_result(test_name, test_num, (user_res == std_res));
 }
 
+// Evaluation function for ft_memset
+void	eval_memset(const char *test_name, int test_num, int c, size_t n)
+{
+	// We create two identical buffers, filled with 'A' to detect changes
+	char	buffer_user[50];
+	char	buffer_std[50];
+	void	*ret_user;
+	void	*ret_std;
+
+	ft_memset(buffer_user, 'A', sizeof(buffer_user));
+	ft_memset(buffer_std, 'A', sizeof(buffer_std));
+
+	// Execute both functions
+	ret_user = ft_memset(buffer_user, c, n);
+	ret_std = ft_memset(buffer_std, c, n);
+
+	// 1. Verify that the modified memory matches exactly
+	int mem_match = (ft_memcmp(buffer_user, buffer_std, sizeof(buffer_user)) == 0);
+
+	// 2. Verify that the returned pointer points to the start of our buffer
+	int ret_match = (ret_user == buffer_user);
+
+	print_result(test_name, test_num, (mem_match && ret_match));
+}
+
 int	main(void)
 {
 	// ==========================================
@@ -165,7 +190,7 @@ int	main(void)
 	// ==========================================
 	// 6. TESTING FT_STRLEN
 	// ==========================================
-	printf("--- Testing ft_strlen ---\n");
+	printf("--- TESTING ft_strlen ---\n");
 	// === 3 EASY TESTS (Standard visible strings) ===
 	eval_strlen("Normal word", 1, "Hello");
 	eval_strlen("Short character", 2, "a");
@@ -179,6 +204,26 @@ int	main(void)
 	eval_strlen("Special/Symbol characters", 8, "!@#$%^&*()_+=-`~[]\\|';:/.,<>?");
 	eval_strlen("String with numbers", 9, "1234567890");
 	eval_strlen("A fairly long string", 10, "This string contains exactly fifty-four characters...");
+
+	printf("--------------------------\n");
+
+	// ==========================================
+	// 7. TESTING FT_MEMSET
+	// ==========================================
+	printf("--- TESTING ft_memset ---\n");
+	// === 3 EASY TESTS (Standard fills on strings) ===
+	eval_memset("Fill 5 bytes with 'B'", 1, 'B', 5);
+	eval_memset("Fill 10 bytes with '*'", 2, '*', 10);
+	eval_memset("Fill 1 byte with 'X'", 3, 'X', 1);
+	// === 3 MEDIUM TESTS (Zeroing, Full buffer fill, Size 0) ===
+	eval_memset("Fill 0 bytes (should do nothing)", 4, 'Z', 0);
+	eval_memset("Fill with null byte \\0", 5, '\0', 8);
+	eval_memset("Fill exact size of entire target", 6, 'M', 50);
+	// === 4 HARD TESTS (Type casting and edge values) ===
+	eval_memset("Int value as char (c = 300)", 7, 300, 10);      // 300 wraps to 44 (',') in unsigned char
+	eval_memset("Negative int value (c = -10)", 8, -10, 10);     // Signs shouldn't mess up the byte cast
+	eval_memset("Fill half and check guard bytes", 9, 'Y', 25);  // Checks if bytes 26-50 are untouched
+	eval_memset("Fill with non-printable character 1", 10, 1, 15);
 
 	printf("--------------------------\n");
 	return (0);
