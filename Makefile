@@ -1,13 +1,17 @@
 NAME = libft.a
-SRCS = ft_atoi.c
-FLAGS = gcc -Wall -Wextra -Werror
+SRCS = $(wildcard ft_*.c)
+CC = gcc
+FLAGS = -Wall -Wextra -Werror
 OBJS = $(SRCS:.c=.o)
 
 all:	$(NAME)
 
 $(NAME): $(OBJS)
-	@$(FLAGS) $(SRCS)
-	@./a.out
+	ar rcs $(NAME) $(OBJS)
+
+%.o:	%.c libft.h
+	@$(CC) $(FLAGS) -c $< -o $@
+
 
 clean:
 	rm -f $(OBJS)
@@ -15,3 +19,5 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 re:	fclean
+
+.PHONY:	re

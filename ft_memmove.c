@@ -6,7 +6,7 @@
 /*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/25 10:39:24 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/25 12:39:26 by dneves-d         ###   ########.fr       */
+/*   Updated: 2026/05/27 09:34:41 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,18 +46,4 @@ void	*ft_memmove(void *dest, const void *src, size_t n)
 	dtv = (const unsigned char *)src;
 	ft_write(dt, dtv, n);
 	return (dt);
-}
-
-#include <stdio.h>
-#include <string.h>
-
-int main() {
-    char str[] = "ABCDEFGH";
-
-    // Copy "ABCDE" starting at index 0 to index 2
-    // Resulting overlap: [A, B, A, B, C, D, E, H]
-    memmove(str + 2, str, 5);
-
-    printf("Result: %s\n", str); // Output: ABABCDEH
-    return 0;
 }
