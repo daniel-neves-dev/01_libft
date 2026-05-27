@@ -173,6 +173,27 @@ void    eval_bzero(const char *test_name, int test_num, size_t n)
     print_result(test_name, test_num, mem_match);
 }
 
+//Test memcpy
+void    eval_memcpy(const char *test_name, int test_num, void *user_dest, const void *user_src, void *std_dest, const void *std_src, size_t n, size_t total_size)
+{
+    void    *ret_user;
+    void    *ret_std;
+
+    // Execute both versions
+    ret_user = ft_memcpy(user_dest, user_src, n);
+    ret_std = ft_memcpy(std_dest, std_src, n);
+
+    // 1. Verify the modified memory blocks match perfectly
+    int mem_match = 1;
+    if (user_dest && std_dest)
+        mem_match = (ft_memcmp(user_dest, std_dest, total_size) == 0);
+
+    // 2. Verify that the returned pointer points exactly to the destination start
+    int ret_match = (ret_user == user_dest && ret_std == std_dest);
+
+    print_result(test_name, test_num, (mem_match && ret_match));
+}
+
 // =============================================================================
 // TEST SUITE WRAPPERS
 // =============================================================================
@@ -290,6 +311,51 @@ void test_bzero(void)
     eval_bzero("Zero out 41 bytes", 10, 41);
 }
 
+void test_memcpy(void)
+{
+    printf("--- TESTING ft_memcpy ---\n");
+    char user_buf[50];
+    char std_buf[50];
+    char src_buf[50] = "The quick brown fox jumps over the lazy dog.";
+
+    ft_memset(user_buf, 'A', 50); ft_memset(std_buf, 'A', 50);
+    eval_memcpy("Copy partial string (15 bytes)", 1, user_buf, src_buf, std_buf, src_buf, 15, 50);
+
+    int user_ints[5] = {0}; int std_ints[5] = {0};
+    int src_ints[5] = {42, 1337, -1, 24, 99};
+    eval_memcpy("Copy integer array (5 ints)", 2, user_ints, src_ints, std_ints, src_ints, sizeof(src_ints), sizeof(src_ints));
+
+    ft_memset(user_buf, 'B', 50); ft_memset(std_buf, 'B', 50);
+    eval_memcpy("Copy string with embedded \\0", 3, user_buf, "Hello\0World", std_buf, "Hello\0World", 11, 50);
+
+    ft_memset(user_buf, 'C', 50); ft_memset(std_buf, 'C', 50);
+    eval_memcpy("Copy minimum size (1 byte)", 4, user_buf, "Z", std_buf, "Z", 1, 50);
+
+    ft_memset(user_buf, 'D', 50);
+    eval_memcpy("Copy source to itself (Same ptr)", 5, user_buf, user_buf, user_buf, user_buf, 20, 50);
+
+
+    ft_memset(user_buf, 'E', 50); ft_memset(std_buf, 'E', 50);
+    eval_memcpy("Size of 0 bytes (Do nothing)", 6, user_buf, src_buf, std_buf, src_buf, 0, 50);
+
+    char src_ctrl[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    ft_memset(user_buf, 0, 50); ft_memset(std_buf, 0, 50);
+    eval_memcpy("Copy raw control bytes", 7, user_buf, src_ctrl, std_buf, src_ctrl, 10, 50);
+
+    ft_memset(user_buf, 'F', 50); ft_memset(std_buf, 'F', 50);
+    eval_memcpy("Copy full buffer size (50 bytes)", 8, user_buf, src_buf, std_buf, src_buf, 50, 50);
+    eval_memcpy("Double NULL with size 0", 9, NULL, NULL, NULL, NULL, 0, 0);
+
+	//Test 10: Double NULL with non-zero size (Strict Verification)
+    // NOTE: In standard C, memcpy(NULL, NULL, 5) results in a crash/SegFault.
+    // Moulinette expects your code to crash here too! If you protected your ft_memcpy
+    // with "if (!dest || !src) return NULL", you will pass this test but FAIL Moulinette.
+    // Uncomment the line below ONLY if your code deliberately lets it segfault or if you want to verify it.
+    eval_memcpy("Double NULL with size 5 (Should Crash)", 10, NULL, NULL, NULL, NULL, 5, 0);
+    //printf("  Test 10 [Double NULL with size 5]: \033[33m[SKIPPED - Verified by design]\033[0m\n");
+
+}
+
 // =============================================================================
 // MAIN EXECUTION RUNNER
 // =============================================================================
@@ -311,6 +377,7 @@ int main(void)
     printf("--------------------------\n\n");
     test_bzero();
     printf("--------------------------\n\n");
-
+	test_memcpy();
+	printf("--------------------------\n\n");
     return (0);
 }
