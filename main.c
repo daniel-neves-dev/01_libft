@@ -45,6 +45,21 @@ void	eval_isalnum(const char *test_name, int test_num, int c)
 	print_result(test_name, test_num, ((user_res != 0) == (std_res != 0)));
 }
 
+// Evaluation function for ft_isascii
+void	eval_isascii(const char *test_name, int test_num, int c)
+{
+	int user_res = ft_isascii(c);
+	int std_res = isascii(c);
+	print_result(test_name, test_num, ((user_res != 0) == (std_res != 0)));
+}
+
+void	eval_isprint(const char *test_name, int test_num, int c)
+{
+	int user_res = ft_isprint(c);
+	int std_res = isprint(c);
+	print_result(test_name, test_num, ((user_res != 0) == (std_res != 0)));
+}
+
 int	main(void)
 {
 	// ==========================================
@@ -54,11 +69,9 @@ int	main(void)
 	eval_isalpha("Uppercase A", 1, 'A');
 	eval_isalpha("Lowercase z", 2, 'z');
 	eval_isalpha("Middle Upper M", 3, 'M');
-
 	eval_isalpha("Digit 5", 4, '5');
 	eval_isalpha("Special Char #", 5, '#');
 	eval_isalpha("Space character", 6, ' ');
-
 	eval_isalpha("Null terminator", 7, '\0');
 	eval_isalpha("EOF / -1 value", 8, -1);
 	eval_isalpha("Extended ASCII 200", 9, 200);
@@ -85,17 +98,14 @@ int	main(void)
 	// 3. TESTING FT_ISALNUM
 	// ==========================================
 	printf("--- TESTING ft_isalnum ---\n");
-
 	// === 3 EASY TESTS (Valid alphanumeric inputs) ===
 	eval_isalnum("Uppercase G", 1, 'G');
 	eval_isalnum("Lowercase m", 2, 'm');
 	eval_isalnum("Digit 3", 3, '3');
-
 	// === 3 MEDIUM TESTS (Standard non-alphanumeric punctuation/whitespace) ===
 	eval_isalnum("Period / Dot", 4, '.');
 	eval_isalnum("Newline  \\n", 5, '\n');
 	eval_isalnum("Question Mark", 6, '?');
-
 	// === 4 HARD TESTS (Tricky ASCII boundaries and extreme edge cases) ===
 	eval_isalnum("Null terminator", 7, '\0');
 	eval_isalnum("EOF / -1 value", 8, -1);
@@ -103,5 +113,42 @@ int	main(void)
 	eval_isalnum("Boundary character [", 10, '[');  // ASCII 91: Exactly 1 above 'Z'
 
 	printf("--------------------------\n");
+
+	// ==========================================
+	// 4. TESTING FT_ISASCII
+	// ==========================================
+	printf("--- TESTING ft_isascii ---\n");
+	// === 3 EASY TESTS (Standard visible ASCII) ===
+	eval_isascii("Letter x", 1, 'x');
+	eval_isascii("Digit 2", 2, '2');
+	eval_isascii("Exclamation mark !", 3, '!');
+	// === 3 MEDIUM TESTS (ASCII Control/Boundary characters) ===
+	eval_isascii("Null terminator (0)", 4, 0);
+	eval_isascii("Backspace (8)", 5, 8);
+	eval_isascii("Highest ASCII (127)", 6, 127); // Delete character
+	// === 4 HARD TESTS (Out of bounds & extreme limits) ===
+	eval_isascii("Just out of bounds (128)", 7, 128);
+	eval_isascii("Negative value (-42)", 8, -42);
+	eval_isascii("EOF / -1 value", 9, -1);
+	eval_isascii("Large integer (2048)", 10, 2048);
+	printf("--------------------------\n");
+
+	// ==========================================
+	// 5. TESTING FT_ISPRINT
+	// ==========================================
+	printf("--- TESTING ft_isprint ---\n");
+	// === 3 EASY TESTS (Standard visibly clear printable characters) ===
+	eval_isprint("Letter K", 1, 'K');
+	eval_isprint("Digit 7", 2, '7');
+	eval_isprint("Percent sign %", 3, '%');
+	// === 3 MEDIUM TESTS (Control characters that are NOT printable) ===
+	eval_isprint("Tab \\t", 4, '\t');
+	eval_isprint("Newline \\n", 5, '\n');
+	eval_isprint("Null terminator \\0", 6, '\0');
+	// === 4 HARD TESTS (Strict boundary limits) ===
+	eval_isprint("Lower boundary: Space", 7, ' '); // ASCII 32: The first printable char
+	eval_isprint("Below lower boundary", 8, 31);   // ASCII 31: Unit Separator (control char)
+	eval_isprint("Upper boundary: Tilde ~", 9, '~'); // ASCII 126: The last printable char
+	eval_isprint("Above upper boundary: DEL", 10, 127); // ASCII 127: Control character (Delete)
 	return (0);
 }
