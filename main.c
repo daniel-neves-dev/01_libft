@@ -210,6 +210,20 @@ void    eval_strrchr(const char *name, int num, const char *s, int c)
     print_result(name, num, (user_res == std_res));
 }
 
+void    eval_strncmp(const char *name, int num, const char *s1, const char *s2, size_t n)
+{
+    int user_res = ft_strncmp(s1, s2, n);
+    int std_res = strncmp(s1, s2, n);
+
+    // Normalize results to -1, 1, or 0 since standard returns can vary across systems
+    if (user_res < 0) user_res = -1;
+    if (user_res > 0) user_res = 1;
+    if (std_res < 0) std_res = -1;
+    if (std_res > 0) std_res = 1;
+
+    print_result(name, num, (user_res == std_res));
+}
+
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -580,6 +594,28 @@ void test_strrchr(void)
     eval_strrchr("Negative int match value (c = -2147483585)", 10, "A padded frame", -2147483585);
 }
 
+void test_strncmp(void)
+{
+    printf("--- TESTING ft_strncmp ---\n");
+
+    // MEDIUM LEVEL
+    eval_strncmp("Identical strings comparison", 1, "Hello", "Hello", 5);
+    eval_strncmp("Difference within checked boundary n", 2, "abcdef", "abcdeg", 6);
+    eval_strncmp("Difference outside checked boundary n", 3, "abcdef", "abcdeg", 5);
+    eval_strncmp("First string shorter than second", 4, "abc", "abcdef", 6);
+    eval_strncmp("Second string shorter than first", 5, "abcdef", "abc", 6);
+
+    // HARD LEVEL
+    // Sneaky 42 Rule: When n is 0, it must return 0 immediately without dereferencing
+    eval_strncmp("Zero length evaluation constraint (n = 0)", 6, "A", "B", 0);
+    eval_strncmp("Compare with empty string component", 7, "", "test", 4);
+    eval_strncmp("Compare two empty strings together", 8, "", "", 5);
+
+    // Unsigned char behavior check (e.g. \200 should be greater than \0)
+    eval_strncmp("Extended ASCII unsigned character evaluation", 9, "test\200", "test\0", 6);
+    eval_strncmp("Massive length evaluation overflow limit", 10, "Hello", "World", 999999);
+}
+
 // =============================================================================
 // MAIN FUNCTION RUNNER
 // =============================================================================
@@ -601,6 +637,7 @@ int main(void)
     test_tolower();   printf("---------------------------------------\n\n");
     test_strchr();    printf("---------------------------------------\n\n");
     test_strrchr();   printf("---------------------------------------\n\n");
+    test_strncmp();   printf("---------------------------------------\n\n");
 
     printf("\033[34mALL TEST CONSTRAINTS COMPLETED.\033[0m\n");
     return (0);
