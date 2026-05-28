@@ -6,7 +6,7 @@
 /*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/25 15:43:34 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/27 10:03:42 by dneves-d         ###   ########.fr       */
+/*   Updated: 2026/05/28 16:34:37 by daniel           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,8 @@
 
 char	*ft_strrchr(const char *s, int c)
 {
-	char *last_letter;
+	char	*last_letter;
+
 	last_letter = NULL;
 	while (*s != '\0')
 	{
