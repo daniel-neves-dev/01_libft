@@ -202,6 +202,14 @@ void    eval_strchr(const char *name, int num, const char *s, int c)
     print_result(name, num, (user_res == std_res));
 }
 
+void    eval_strrchr(const char *name, int num, const char *s, int c)
+{
+    const char *user_res = ft_strrchr(s, c);
+    const char *std_res = strrchr(s, c);
+
+    print_result(name, num, (user_res == std_res));
+}
+
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -548,6 +556,30 @@ void test_strchr(void)
     eval_strchr("Negative int match value (c = -2147483585)", 10, "A padded frame", -2147483585);
 }
 
+void test_strrchr(void)
+{
+    printf("--- TESTING ft_strrchr ---\n");
+    const char *str = "The 42 school foundation!";
+    const char *dup_str = "bonbon";
+
+    // MEDIUM LEVEL
+    eval_strrchr("Match unique character 'T'", 1, str, 'T');
+    eval_strrchr("Match unique character 's'", 2, str, 's');
+    eval_strrchr("Match last occurrence of 'o' in 'bonbon'", 3, dup_str, 'o');
+    eval_strrchr("Match last occurrence of 'b' in 'bonbon'", 4, dup_str, 'b');
+    eval_strrchr("No match found character 'z'", 5, str, 'z');
+
+    // HARD LEVEL
+    // Sneaky 42 Rule: Searching for '\0' must return the pointer to the end of the string
+    eval_strrchr("Search for explicit null terminator \\0", 6, str, '\0');
+    eval_strrchr("Search inside an empty string \"\"", 7, "", 'A');
+    eval_strrchr("Search for \\0 inside an empty string \"\"", 8, "", '\0');
+
+    // Character values are cast to char, handling massive int overflows/underflows safely
+    eval_strrchr("Overflow int match value (c = 300, maps to ',')", 9, "Hello, World, again", 300);
+    eval_strrchr("Negative int match value (c = -2147483585)", 10, "A padded frame", -2147483585);
+}
+
 // =============================================================================
 // MAIN FUNCTION RUNNER
 // =============================================================================
@@ -568,6 +600,7 @@ int main(void)
     test_toupper();   printf("---------------------------------------\n\n");
     test_tolower();   printf("---------------------------------------\n\n");
     test_strchr();    printf("---------------------------------------\n\n");
+    test_strrchr();   printf("---------------------------------------\n\n");
 
     printf("\033[34mALL TEST CONSTRAINTS COMPLETED.\033[0m\n");
     return (0);
