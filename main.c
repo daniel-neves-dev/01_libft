@@ -4,7 +4,6 @@
 #include <limits.h>
 #include "libft.h"
 
-
 // =============================================================================
 // CORE TEST UNIT UTILITIES
 // =============================================================================
@@ -242,6 +241,14 @@ void    eval_memcmp(const char *name, int num, const void *s1, const void *s2, s
     if (user_res > 0) user_res = 1;
     if (std_res < 0) std_res = -1;
     if (std_res > 0) std_res = 1;
+
+    print_result(name, num, (user_res == std_res));
+}
+
+void    eval_strnstr(const char *name, int num, const char *big, const char *little, size_t len)
+{
+    const char *user_res = ft_strnstr(big, little, len);
+    const char *std_res = ft_strnstr(big, little, len);
 
     print_result(name, num, (user_res == std_res));
 }
@@ -687,6 +694,29 @@ void test_memcmp(void)
     eval_memcmp("Scan non-string raw binary buffers (int array mismatch)", 10, arr1, arr2, sizeof(arr1));
 }
 
+void test_strnstr(void)
+{
+    printf("--- TESTING ft_strnstr ---\n");
+    const char *haystack = "See 42 school foundation!";
+
+    // MEDIUM LEVEL
+    eval_strnstr("Match substring right at the start", 1, haystack, "See", 5);
+    eval_strnstr("Match substring in the middle", 2, haystack, "school", 15);
+    eval_strnstr("Match exactly matching len requirement boundary", 3, haystack, "42", 6);
+    eval_strnstr("Substring exists but outside len capacity limit", 4, haystack, "foundation", 10);
+    eval_strnstr("Substring does not exist anywhere in string", 5, haystack, "academy", 25);
+
+    // HARD LEVEL
+    // Sneaky 42 Rule: If little is empty, return big immediately
+    eval_strnstr("Little parameter is an empty string \"\"", 6, haystack, "", 10);
+    eval_strnstr("Both parameters are empty strings \"\"", 7, "", "", 5);
+    eval_strnstr("Len capacity limit is completely 0", 8, haystack, "See", 0);
+
+    // Safety check ensuring your scanner stops completely at early null bytes
+    eval_strnstr("Match substring containing an internal null byte match", 9, "Hello\0World", "World", 11);
+    eval_strnstr("Massive len capacity size parameter boundary limit", 10, haystack, "foundation", 999999);
+}
+
 // =============================================================================
 // MAIN FUNCTION RUNNER
 // =============================================================================
@@ -711,6 +741,7 @@ int main(void)
     test_strncmp();   printf("---------------------------------------\n\n");
     test_memchr();    printf("---------------------------------------\n\n");
     test_memcmp();    printf("---------------------------------------\n\n");
+    test_strnstr();   printf("---------------------------------------\n\n");
 
     printf("\033[34mALL TEST CONSTRAINTS COMPLETED.\033[0m\n");
     return (0);
