@@ -232,6 +232,19 @@ void    eval_memchr(const char *name, int num, const void *s, int c, size_t n)
     print_result(name, num, (user_res == std_res));
 }
 
+void    eval_memcmp(const char *name, int num, const void *s1, const void *s2, size_t n)
+{
+    int user_res = ft_memcmp(s1, s2, n);
+    int std_res = memcmp(s1, s2, n);
+
+    // Normalize results to -1, 1, or 0 for stable system cross-compatibility
+    if (user_res < 0) user_res = -1;
+    if (user_res > 0) user_res = 1;
+    if (std_res < 0) std_res = -1;
+    if (std_res > 0) std_res = 1;
+
+    print_result(name, num, (user_res == std_res));
+}
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -647,6 +660,33 @@ void test_memchr(void)
     eval_memchr("Overflow int search criteria (c = 300, wraps to ',')", 9, "Hello, World", 300, 12);
     eval_memchr("Scan binary non-string buffers (integer array)", 10, int_arr, 30, sizeof(int_arr));
 }
+
+void test_memcmp(void)
+{
+    printf("--- TESTING ft_memcmp ---\n");
+    int arr1[3] = {1, 2, 3};
+    int arr2[3] = {1, 5, 3};
+
+    // MEDIUM LEVEL
+    eval_memcmp("Identical memory blocks comparison", 1, "Hello", "Hello", 5);
+    eval_memcmp("Difference within checked buffer space n", 2, "abcde", "abcze", 5);
+    eval_memcmp("Difference outside checked buffer space n", 3, "abcde", "abcze", 3);
+    eval_memcmp("First buffer lexicographically smaller", 4, "A", "B", 1);
+    eval_memcmp("Second buffer lexicographically smaller", 5, "B", "A", 1);
+
+    // HARD LEVEL
+    // Sneaky 42 Rule: memcmp must look past \0 characters completely
+    eval_memcmp("Ignore null terminators and check subsequent bytes", 6, "abc\0same", "abc\0diff", 8);
+    eval_memcmp("Zero length evaluation constraint (n = 0)", 7, "A", "B", 0);
+
+    // Unsigned char tracking check (\200 value should be larger than \0)
+    eval_memcmp("Extended ASCII unsigned byte value comparison", 8, "\200", "\0", 1);
+
+    // Testing non-string raw binary allocations (integer arrays)
+    eval_memcmp("Scan non-string raw binary buffers (int array match)", 9, arr1, arr1, sizeof(arr1));
+    eval_memcmp("Scan non-string raw binary buffers (int array mismatch)", 10, arr1, arr2, sizeof(arr1));
+}
+
 // =============================================================================
 // MAIN FUNCTION RUNNER
 // =============================================================================
@@ -670,6 +710,8 @@ int main(void)
     test_strrchr();   printf("---------------------------------------\n\n");
     test_strncmp();   printf("---------------------------------------\n\n");
     test_memchr();    printf("---------------------------------------\n\n");
+    test_memcmp();    printf("---------------------------------------\n\n");
+
     printf("\033[34mALL TEST CONSTRAINTS COMPLETED.\033[0m\n");
     return (0);
 }
