@@ -224,6 +224,14 @@ void    eval_strncmp(const char *name, int num, const char *s1, const char *s2, 
     print_result(name, num, (user_res == std_res));
 }
 
+void    eval_memchr(const char *name, int num, const void *s, int c, size_t n)
+{
+    const void *user_res = ft_memchr(s, c, n);
+    const void *std_res = memchr(s, c, n);
+
+    print_result(name, num, (user_res == std_res));
+}
+
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -616,6 +624,29 @@ void test_strncmp(void)
     eval_strncmp("Massive length evaluation overflow limit", 10, "Hello", "World", 999999);
 }
 
+void test_memchr(void)
+{
+    printf("--- TESTING ft_memchr ---\n");
+    const char *str = "The 42 school foundation!";
+    int int_arr[4] = {10, 20, 30, 40};
+
+    // MEDIUM LEVEL
+    eval_memchr("Match first byte character 'T'", 1, str, 'T', 5);
+    eval_memchr("Match middle byte character 's'", 2, str, 's', 15);
+    eval_memchr("Match character right on boundary index n", 3, str, '4', 5);
+    eval_memchr("Match character past boundary index n (Should fail)", 4, str, '4', 3);
+    eval_memchr("No match found anywhere in buffer", 5, str, 'z', 20);
+
+    // HARD LEVEL
+    // Sneaky 42 Rule: memchr must treat \0 as a regular searchable character, not a terminator
+    eval_memchr("Search for embedded null terminator \\0", 6, "Hello\0World", '\0', 11);
+    eval_memchr("Search past a null terminator for subsequent matches", 7, "Abc\0def", 'e', 7);
+    eval_memchr("Search inside a memory space with n set to 0", 8, "Hello", 'H', 0);
+
+    // Testing parameter casting behaviors with large integers and arrays
+    eval_memchr("Overflow int search criteria (c = 300, wraps to ',')", 9, "Hello, World", 300, 12);
+    eval_memchr("Scan binary non-string buffers (integer array)", 10, int_arr, 30, sizeof(int_arr));
+}
 // =============================================================================
 // MAIN FUNCTION RUNNER
 // =============================================================================
@@ -638,7 +669,7 @@ int main(void)
     test_strchr();    printf("---------------------------------------\n\n");
     test_strrchr();   printf("---------------------------------------\n\n");
     test_strncmp();   printf("---------------------------------------\n\n");
-
+    test_memchr();    printf("---------------------------------------\n\n");
     printf("\033[34mALL TEST CONSTRAINTS COMPLETED.\033[0m\n");
     return (0);
 }
