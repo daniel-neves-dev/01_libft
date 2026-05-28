@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_atoi.c                                          :+:      :+:    :+:   */
+/*   ft_bzero.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/26 12:14:02 by daniel            #+#    #+#             */
-/*   Updated: 2026/05/27 09:34:18 by dneves-d         ###   ########.fr       */
+/*   Created: 2026/05/25 10:00:51 by dneves-d          #+#    #+#             */
+/*   Updated: 2026/05/25 10:37:03 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,25 +14,27 @@
 
 int	ft_atoi(const char *nptr)
 {
-	int	result;
-	int sign;
+	int		signal;
+	long	result;
 
+	signal = 1;
 	result = 0;
-	sign = 1;
-	while (*nptr == 32 || (*nptr > 8 && *nptr < 14))
+	while (*nptr == ' ' || (*nptr > 8 && *nptr < 14))
 	{
 		nptr++;
 	}
-	while (*nptr == '-' || *nptr == '+')
+	if (*nptr == '-' || *nptr == '+')
 	{
 		if (*nptr == '-')
-			sign -= 1;
+		{
+			signal = -1;
+		}
 		nptr++;
 	}
 	while (*nptr >= '0' && *nptr <= '9')
 	{
-		result = result * 10 + (*nptr - '0');
+		result = (result * 10) + (*nptr - '0');
 		nptr++;
 	}
-	return (result * sign);
+	return ((int)(result * signal));
 }

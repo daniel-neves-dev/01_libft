@@ -252,6 +252,14 @@ void    eval_strnstr(const char *name, int num, const char *big, const char *lit
 
     print_result(name, num, (user_res == std_res));
 }
+
+void    eval_atoi(const char *name, int num, const char *nptr)
+{
+    int user_res = atoi(nptr);
+    int std_res = atoi(nptr);
+
+    print_result(name, num, (user_res == std_res));
+}
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -717,6 +725,24 @@ void test_strnstr(void)
     eval_strnstr("Massive len capacity size parameter boundary limit", 10, haystack, "foundation", 999999);
 }
 
+void test_atoi(void)
+{
+    printf("--- TESTING ft_atoi ---\n");
+
+    // MEDIUM LEVEL
+    eval_atoi("Standard positive number sequence", 1, "42");
+    eval_atoi("Standard negative number sequence", 2, "-1337");
+    eval_atoi("Leading whitespace combinations", 3, "   \t\n\r\v\f789");
+    eval_atoi("Explicit single plus sign prefix", 4, "+555");
+    eval_atoi("Trailing non-numeric characters early stop", 5, "1234abcd56");
+
+    // HARD LEVEL
+    eval_atoi("Empty string value handling", 6, "");
+    eval_atoi("Lone invalid characters without numbers", 7, "++42");
+    eval_atoi("Exact ceiling value boundary matching INT_MAX", 8, "2147483647");
+    eval_atoi("Exact floor value boundary matching INT_MIN", 9, "-2147483648");
+    eval_atoi("Heavy digit overflow exceeding long storage limits", 10, "99999999999999999999");
+}
 // =============================================================================
 // MAIN FUNCTION RUNNER
 // =============================================================================
@@ -742,6 +768,7 @@ int main(void)
     test_memchr();    printf("---------------------------------------\n\n");
     test_memcmp();    printf("---------------------------------------\n\n");
     test_strnstr();   printf("---------------------------------------\n\n");
+    test_atoi();      printf("---------------------------------------\n\n");
 
     printf("\033[34mALL TEST CONSTRAINTS COMPLETED.\033[0m\n");
     return (0);
