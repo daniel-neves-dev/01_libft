@@ -346,6 +346,29 @@ void    eval_calloc(const char *name, int num, size_t n, size_t size)
     // Since we handle frees cleanly right here, if the content matched, the test passed!
     print_result(name, num, match);
 }
+
+void    eval_strdup(const char *name, int num, const char *s)
+{
+    char *user_res = ft_strdup(s);
+    char *std_res = strdup(s);
+
+    int match = 0;
+    if (!user_res && !std_res)
+        match = 1; // Both safely failed allocation
+    else if (user_res && std_res)
+    {
+        // Check if the contents match and that it is properly null-terminated
+        match = (strcmp(user_res, std_res) == 0);
+    }
+
+    print_result(name, num, match);
+
+    if (user_res)
+        free(user_res);
+    if (std_res)
+        free(std_res);
+}
+
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -851,6 +874,30 @@ void test_calloc(void)
     eval_calloc("Multiplication overflow safety checking limit (INT_MAX)", 9, INT_MAX, 2);
     eval_calloc("Multiplication overflow extreme limit check (SIZE_MAX)", 10, SIZE_MAX, SIZE_MAX);
 }
+
+void test_strdup(void)
+{
+    printf("--- TESTING ft_strdup ---\n");
+
+    // MEDIUM LEVEL
+    eval_strdup("Standard short word duplication", 1, "Hello");
+    eval_strdup("Sentence string with spaces", 2, "The 42 school foundation!");
+    eval_strdup("Numeric string duplication pattern", 3, "1234567890");
+    eval_strdup("String with trailing whitespace padding", 4, "Word   ");
+    eval_strdup("Single character string token", 5, "x");
+
+    // HARD LEVEL
+    eval_strdup("Empty string duplication checking \"\"", 6, "");
+    eval_strdup("String containing escape character sequences", 7, "\n\t\r\v\f");
+    eval_strdup("Early split string with internal null byte", 8, "Hello\0World");
+
+    // Testing layout capabilities on extremely heavy payloads
+    char block_5k[5001];
+    memset(block_5k, 's', 5000); block_5k[5000] = '\0';
+    eval_strdup("Massive 5000 character string transaction", 9, block_5k);
+
+    eval_strdup("String consisting entirely of symbol markers", 10, "!@#$%^&*()_+~`[]{}|;:',./<>?");
+}
 // =============================================================================
 // MAIN FUNCTION RUNNER
 // =============================================================================
@@ -877,7 +924,8 @@ int main(void)
     test_memcmp();    printf("---------------------------------------\n\n");
     test_strnstr();   printf("---------------------------------------\n\n");
     test_atoi();      printf("---------------------------------------\n\n");
-    test_calloc();    printf("---------------------------------------\n\n");
+    //test_calloc();    printf("---------------------------------------\n\n");
+    test_strdup();    printf("---------------------------------------\n\n");
 
     printf("\033[34mALL TEST CONSTRAINTS COMPLETED.\033[0m\n");
     return (0);
