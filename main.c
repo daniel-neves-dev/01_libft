@@ -2,6 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <limits.h>
+#include <stdint.h>
 #include "libft.h"
 
 // =============================================================================
@@ -259,6 +260,30 @@ void    eval_atoi(const char *name, int num, const char *nptr)
     int std_res = atoi(nptr);
 
     print_result(name, num, (user_res == std_res));
+}
+
+void    eval_calloc(const char *name, int num, size_t n, size_t size)
+{
+    void *user_res = ft_calloc(n, size);
+    void *std_res = calloc(n, size);
+
+    int match = 0;
+    if (!user_res && !std_res)
+        match = 1; // Both failed allocation safely
+    else if (user_res && std_res)
+    {
+        // Calculate the total allocation window size to check for zeroing
+        size_t total = n * size;
+        if (total == 0)
+            match = 1; // Edge case unique pointer validation
+        else
+            match = (memcmp(user_res, std_res, total) == 0);
+    }
+
+    print_result(name, num, match);
+
+    free(user_res);
+    free(std_res);
 }
 // =============================================================================
 // TEST SUITE SUITES
@@ -743,6 +768,28 @@ void test_atoi(void)
     eval_atoi("Exact floor value boundary matching INT_MIN", 9, "-2147483648");
     eval_atoi("Heavy digit overflow exceeding long storage limits", 10, "99999999999999999999");
 }
+
+void test_calloc(void)
+{
+    printf("--- TESTING ft_calloc ---\n");
+
+    // MEDIUM LEVEL
+    eval_calloc("Standard integer array configuration (5 ints)", 1, 5, sizeof(int));
+    eval_calloc("Standard character block configuration (20 chars)", 2, 20, sizeof(char));
+    eval_calloc("Single element dynamic allocation sizing", 3, 1, 50);
+    eval_calloc("Large item allocation with modest quantity", 4, 2, 200);
+    eval_calloc("Modest item allocation with clean sequence blocks", 5, 50, 1);
+
+    // HARD LEVEL
+    // Subject constraint rule check: n or size is 0
+    eval_calloc("Element size constraint set to zero (n = 0)", 6, 0, 10);
+    eval_calloc("Byte structure capacity constraint set to zero (size = 0)", 7, 10, 0);
+    eval_calloc("Both operational sizing parameters set to zero", 8, 0, 0);
+
+    // Safety integrity limits: integer overflows on total multiplication sizing
+    eval_calloc("Multiplication overflow safety checking limit (INT_MAX)", 9, INT_MAX, 2);
+    eval_calloc("Multiplication overflow extreme limit check (SIZE_MAX)", 10, SIZE_MAX, SIZE_MAX);
+}
 // =============================================================================
 // MAIN FUNCTION RUNNER
 // =============================================================================
@@ -769,6 +816,7 @@ int main(void)
     test_memcmp();    printf("---------------------------------------\n\n");
     test_strnstr();   printf("---------------------------------------\n\n");
     test_atoi();      printf("---------------------------------------\n\n");
+    test_calloc();    printf("---------------------------------------\n\n");
 
     printf("\033[34mALL TEST CONSTRAINTS COMPLETED.\033[0m\n");
     return (0);
