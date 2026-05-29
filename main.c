@@ -349,20 +349,26 @@ void    eval_calloc(const char *name, int num, size_t n, size_t size)
 
 void    eval_strdup(const char *name, int num, const char *s)
 {
+    // 1. Isolate and run the functions
+    reset_leak_tracker();
     char *user_res = ft_strdup(s);
+
     char *std_res = strdup(s);
 
+    // 2. Content verification check
     int match = 0;
     if (!user_res && !std_res)
         match = 1; // Both safely failed allocation
     else if (user_res && std_res)
     {
-        // Check if the contents match and that it is properly null-terminated
+        // Check if the contents match perfectly
         match = (strcmp(user_res, std_res) == 0);
     }
 
+    // 3. Print singular clean output status
     print_result(name, num, match);
 
+    // 4. Clean up the heap memory safely using standard free
     if (user_res)
         free(user_res);
     if (std_res)
@@ -924,7 +930,7 @@ int main(void)
     test_memcmp();    printf("---------------------------------------\n\n");
     test_strnstr();   printf("---------------------------------------\n\n");
     test_atoi();      printf("---------------------------------------\n\n");
-    //test_calloc();    printf("---------------------------------------\n\n");
+    test_calloc();    printf("---------------------------------------\n\n");
     test_strdup();    printf("---------------------------------------\n\n");
 
     printf("\033[34mALL TEST CONSTRAINTS COMPLETED.\033[0m\n");
