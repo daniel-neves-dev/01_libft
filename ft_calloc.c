@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_calloc.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: daniel <marvin@42.fr>                      +#+  +:+       +#+        */
+/*   By: dneves-d <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/29 11:39:55 by daniel            #+#    #+#             */
-/*   Updated: 2026/05/29 11:39:58 by daniel           ###   ########.fr       */
+/*   Created: 2026/05/29 11:39:55 by dneves-d          #+#    #+#             */
+/*   Updated: 2026/05/29 11:39:58 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,12 @@ void	*ft_calloc(size_t n, size_t size)
 	void	*ptr;
 	size_t	total;
 
-	if (n != 0 && (size > __SIZE_MAX__ / n))
+	if (n == 0 || size == 0)
+	{
+		n = 1;
+		size = 1;
+	}
+	if (n > 0 && (size > __SIZE_MAX__ / n))
 		return (NULL);
 	total = n * size;
 	ptr = malloc(total);
