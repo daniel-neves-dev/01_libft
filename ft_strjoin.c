@@ -29,7 +29,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	while (s2[i] != '\0')
 	{
 		join[ft_strlen(s1) + i] = s2[i];
-		j++;
+		i++;
 	}
 	join[ft_strlen(s1) + i] = '\0';
 	return (join);
