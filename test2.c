@@ -115,7 +115,7 @@ void    eval_strtrim(const char *name, int num, const char *s1, const char *set)
     // Match verification checks
     int match = 0;
     if (!user_res && !std_res)
-        match = 1; // Both safely failed allocation
+        match = 1; // Both safely returned NULL on system limits
     else if (user_res && std_res)
     {
         match = (strcmp(user_res, std_res) == 0);
@@ -123,8 +123,11 @@ void    eval_strtrim(const char *name, int num, const char *s1, const char *set)
 
     print_result(name, num, match);
 
-    if (user_res) free(user_res);
-    if (std_res)  free(std_res);
+    // Explicitly free pointers to ensure the evaluation engine leaves 0 leaks
+    if (user_res)
+        free(user_res);
+    if (std_res)
+        free(std_res);
 }
 
 // =============================================================================
@@ -183,12 +186,9 @@ void test_strtrim(void)
     eval_strtrim("Trim characters only present at the end", 4, "World!!!", "!");
     eval_strtrim("No trim matches found anywhere", 5, "Hello World", "xyz");
 
-    // HARD LEVEL
-    // Sneaky 42 Rule: Entire string gets wiped out by the set
+    // HARD LEVEL (Triggers extreme trimming allocations)
     eval_strtrim("Entire string consists of trim set characters", 6, "bbbbbbbb", "b");
     eval_strtrim("Trim set characters alternate throughout", 7, "  \t  \t  ", " \t");
-
-    // Empty constraints checking
     eval_strtrim("Set parameter is an empty string \"\"", 8, "Hello World", "");
     eval_strtrim("S1 parameter is an empty string \"\"", 9, "", "abc");
     eval_strtrim("Both parameters are empty strings \"\"", 10, "", "");
