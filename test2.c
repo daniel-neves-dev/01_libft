@@ -87,6 +87,46 @@ void    eval_strjoin(const char *name, int num, const char *s1, const char *s2)
     if (std_res)  free(std_res);
 }
 
+void    eval_strtrim(const char *name, int num, const char *s1, const char *set)
+{
+    char *user_res = ft_strtrim(s1, set);
+    char *std_res = NULL;
+
+    // Strict 42 Behavioral simulation matching reference engine
+    if (s1 && set)
+    {
+        size_t start = 0;
+        size_t end = strlen(s1);
+
+        while (s1[start] && strchr(set, s1[start]))
+            start++;
+        while (end > start && strchr(set, s1[end - 1]))
+            end--;
+
+        size_t trim_len = end - start;
+        std_res = malloc(trim_len + 1);
+        if (std_res)
+        {
+            strncpy(std_res, s1 + start, trim_len);
+            std_res[trim_len] = '\0';
+        }
+    }
+
+    // Match verification checks
+    int match = 0;
+    if (!user_res && !std_res)
+        match = 1; // Both safely failed allocation
+    else if (user_res && std_res)
+    {
+        match = (strcmp(user_res, std_res) == 0);
+    }
+
+    print_result(name, num, match);
+
+    if (user_res) free(user_res);
+    if (std_res)  free(std_res);
+}
+
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -132,10 +172,34 @@ void test_strjoin(void)
     eval_strjoin("Join long special escape character chains", 10, "\n\t\r", "\v\f\0");
 }
 
+void test_strtrim(void)
+{
+    printf("--- TESTING ft_strtrim ---\n");
+
+    // MEDIUM LEVEL
+    eval_strtrim("Trim spaces from both ends", 1, "   Hello World   ", " ");
+    eval_strtrim("Trim specific letters from start and end", 2, "xaHello Worldax", "ax");
+    eval_strtrim("Trim characters only present at the start", 3, "777Hello", "7");
+    eval_strtrim("Trim characters only present at the end", 4, "World!!!", "!");
+    eval_strtrim("No trim matches found anywhere", 5, "Hello World", "xyz");
+
+    // HARD LEVEL
+    // Sneaky 42 Rule: Entire string gets wiped out by the set
+    eval_strtrim("Entire string consists of trim set characters", 6, "bbbbbbbb", "b");
+    eval_strtrim("Trim set characters alternate throughout", 7, "  \t  \t  ", " \t");
+
+    // Empty constraints checking
+    eval_strtrim("Set parameter is an empty string \"\"", 8, "Hello World", "");
+    eval_strtrim("S1 parameter is an empty string \"\"", 9, "", "abc");
+    eval_strtrim("Both parameters are empty strings \"\"", 10, "", "");
+}
+
 int main(void)
 {
     test_substr();      printf("---------------------------------------\n\n");
     test_strjoin();     printf("---------------------------------------\n\n");
+    test_strtrim();     printf("---------------------------------------\n\n");
+
     printf("\033[34mPART 2 - ADDITIONAL CONSTRAINTS RUN COMPLETE.\033[0m\n");
     return (0);
 }

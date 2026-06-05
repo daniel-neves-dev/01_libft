@@ -21,7 +21,7 @@ char	*ft_strtrim(char const *s1, char const *set)
 	if (!s1 || !set)
 		return (NULL);
 	if (s1[0] == '\0')
-		return ft_strdup("");
+		return (ft_strdup(""));
 	start = 0;
 	end = ft_strlen(s1) - 1;
 	while (s1[start] != '\0' && ft_strchr(set, s1[start]) != NULL)
@@ -29,7 +29,7 @@ char	*ft_strtrim(char const *s1, char const *set)
 	while (end > start && ft_strchr(set, s1[end]))
 		end--;
 	if (start > end)
-		return ft_strdup("");
+		return (ft_strdup(""));
 	len_s1 = end - start + 1;
 	return (ft_substr(s1, start, len_s1));
 }
