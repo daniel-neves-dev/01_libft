@@ -130,6 +130,96 @@ void    eval_strtrim(const char *name, int num, const char *s1, const char *set)
         free(std_res);
 }
 
+void    eval_split(const char *name, int num, const char *s, char c)
+{
+    char **user_res = ft_split(s, c);
+    char **std_res = NULL;
+
+    // Behavioral twin baseline calculation
+    if (s)
+    {
+        int words = 0;
+        int i = 0;
+        while (s[i])
+        {
+            while (s[i] && s[i] == c) i++;
+            if (s[i] && s[i] != c)
+            {
+                words++;
+                while (s[i] && s[i] != c) i++;
+            }
+        }
+        std_res = malloc(sizeof(char *) * (words + 1));
+        if (std_res)
+        {
+            int w = 0;
+            i = 0;
+            while (s[i])
+            {
+                while (s[i] && s[i] == c) i++;
+                if (s[i] && s[i] != c)
+                {
+                    int len = 0;
+                    while (s[i + len] && s[i + len] != c) len++;
+                    std_res[w] = malloc(len + 1);
+                    if (std_res[w])
+                    {
+                        strncpy(std_res[w], s + i, len);
+                        std_res[w][len] = '\0';
+                    }
+                    w++;
+                    i += len;
+                }
+            }
+            std_res[w] = NULL;
+        }
+    }
+
+    // Comprehensive Array Comparison Match Matrix
+    int match = 1;
+    if (!user_res && !std_res)
+        match = 1;
+    else if (!user_res || !std_res)
+        match = 0;
+    else
+    {
+        int idx = 0;
+        while (user_res[idx] || std_res[idx])
+        {
+            if (!user_res[idx] || !std_res[idx] || strcmp(user_res[idx], std_res[idx]) != 0)
+            {
+                match = 0;
+                break;
+            }
+            idx++;
+        }
+    }
+
+    print_result(name, num, match);
+
+    // Deep-Clean Memory Reclamation (Prevents Evaluation Engine Leaks)
+    if (user_res)
+    {
+        int idx = 0;
+        while (user_res[idx])
+        {
+            free(user_res[idx]);
+            idx++;
+        }
+        free(user_res);
+    }
+    if (std_res)
+    {
+        int idx = 0;
+        while (std_res[idx])
+        {
+            free(std_res[idx]);
+            idx++;
+        }
+        free(std_res);
+    }
+}
+
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -194,11 +284,30 @@ void test_strtrim(void)
     eval_strtrim("Both parameters are empty strings \"\"", 10, "", "");
 }
 
+void test_split(void)
+{
+    printf("--- TESTING ft_split ---\n");
+
+    // MEDIUM LEVEL
+    eval_split("Standard sentence broken by spaces", 1, "The 42 school foundation", ' ');
+    eval_split("Path segments split by forward slash", 2, "bin/usr/local/include", '/');
+    eval_split("Single character text token check", 3, "a", ' ');
+    eval_split("String containing words but no delimiters", 4, "Hello", 'z');
+    eval_split("Delimiter matches first and last character", 5, "-word-", '-');
+
+    // HARD LEVEL (Triggers nested edge-case allocations)
+    eval_split("Consecutive repeating delimiters block", 6, "Hello------World!!!", '-');
+    eval_split("String consisting entirely of delimiters", 7, "xxxxxxx", 'x');
+    eval_split("Empty string parameter argument \"\"", 8, "", 'c');
+    eval_split("String with extended ASCII character splits", 9, "split\200word\200test", '\200');
+    eval_split("Delimiter parameter character set to null terminator", 10, "Hello World", '\0');
+}
 int main(void)
 {
     test_substr();      printf("---------------------------------------\n\n");
     test_strjoin();     printf("---------------------------------------\n\n");
     test_strtrim();     printf("---------------------------------------\n\n");
+    test_split();     printf("---------------------------------------\n\n");
 
     printf("\033[34mPART 2 - ADDITIONAL CONSTRAINTS RUN COMPLETE.\033[0m\n");
     return (0);
