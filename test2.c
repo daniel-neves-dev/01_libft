@@ -249,6 +249,64 @@ void    eval_itoa(const char *name, int num, int n)
 }
 
 // =============================================================================
+// ESPECIAL CASE FUNCTION APLLY FUNCTION
+// =============================================================================
+
+// Mock function 1: Increments character ASCII value by 1 (ignoring index)
+char mock_toupper_slide(unsigned int i, char c)
+{
+    (void)i;
+    if (c >= 'a' && c <= 'z')
+        return (c - 32);
+    return (c);
+}
+
+// Mock function 2: Encodes the character based entirely on its index position
+char mock_index_shift(unsigned int i, char c)
+{
+    return (c + (i % 3));
+}
+
+void    eval_strmapi(const char *name, int num, const char *s, char (*f)(unsigned int, char))
+{
+    char *user_res = ft_strmapi(s, f);
+    char *std_res = NULL;
+
+    // Strict 42 Behavioral simulation matching reference engine
+    if (s && f)
+    {
+        size_t len = strlen(s);
+        std_res = malloc(len + 1);
+        if (std_res)
+        {
+            unsigned int i = 0;
+            while (s[i])
+            {
+                std_res[i] = f(i, s[i]);
+                i++;
+            }
+            std_res[i] = '\0';
+        }
+    }
+
+    // Match verification checks
+    int match = 0;
+    if (!user_res && !std_res)
+        match = 1;
+    else if (user_res && std_res)
+    {
+        match = (strcmp(user_res, std_res) == 0);
+    }
+
+    print_result(name, num, match);
+
+    if (user_res)
+        free(user_res);
+    if (std_res)
+        free(std_res);
+}
+
+// =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
 void test_substr(void)
@@ -350,6 +408,28 @@ void test_itoa(void)
     eval_itoa("Large scale round negative multi-zero layout", 10, -2000000000);
 }
 
+void test_strmapi(void)
+{
+    printf("--- TESTING ft_strmapi ---\n");
+
+    // MEDIUM LEVEL (Using character slider mock)
+    eval_strmapi("Map all lowercase to uppercase", 1, "hello", mock_toupper_slide);
+    eval_strmapi("Map mixed alpha values together", 2, "42School", mock_toupper_slide);
+    eval_strmapi("Map single isolated token character", 3, "z", mock_toupper_slide);
+    eval_strmapi("Map spaces and punctuation sequences", 4, "a b!c", mock_toupper_slide);
+    eval_strmapi("Map a clean numeric string layout", 5, "12345", mock_toupper_slide);
+
+    // HARD LEVEL (Testing index positions and edge arguments)
+    eval_strmapi("Index shift transformation logic test", 6, "aaaaa", mock_index_shift);
+    eval_strmapi("Index shift on larger mixed sentence layout", 7, "The 42 Project", mock_index_shift);
+    eval_strmapi("Map inside an empty string component \"\"", 8, "", mock_toupper_slide);
+    eval_strmapi("Index shift inside empty string layout", 9, "", mock_index_shift);
+
+    char block_5k[5001];
+    memset(block_5k, 'a', 5000); block_5k[5000] = '\0';
+    eval_strmapi("Massive 5000 item string transformation array", 10, block_5k, mock_index_shift);
+}
+
 int main(void)
 {
     test_substr();    printf("---------------------------------------\n\n");
@@ -357,6 +437,7 @@ int main(void)
     test_strtrim();   printf("---------------------------------------\n\n");
     test_split();     printf("---------------------------------------\n\n");
     test_itoa();      printf("---------------------------------------\n\n");
+    test_strmapi();   printf("---------------------------------------\n\n");
 
     printf("\033[34mPART 2 - ADDITIONAL CONSTRAINTS RUN COMPLETE.\033[0m\n");
     return (0);
