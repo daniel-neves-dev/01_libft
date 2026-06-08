@@ -220,6 +220,34 @@ void    eval_split(const char *name, int num, const char *s, char c)
     }
 }
 
+void    eval_itoa(const char *name, int num, int n)
+{
+    char *user_res = ft_itoa(n);
+    char *std_res = malloc(32); // Safe allocation cushion for 32-bit int string representation
+
+    if (std_res)
+    {
+        // Generate system behavioral baseline using sprintf
+        sprintf(std_res, "%d", n);
+    }
+
+    // Match verification checks
+    int match = 0;
+    if (!user_res && !std_res)
+        match = 1;
+    else if (user_res && std_res)
+    {
+        match = (strcmp(user_res, std_res) == 0);
+    }
+
+    print_result(name, num, match);
+
+    if (user_res)
+        free(user_res);
+    if (std_res)
+        free(std_res);
+}
+
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -302,12 +330,33 @@ void test_split(void)
     eval_split("String with extended ASCII character splits", 9, "split\200word\200test", '\200');
     eval_split("Delimiter parameter character set to null terminator", 10, "Hello World", '\0');
 }
+
+void test_itoa(void)
+{
+    printf("--- TESTING ft_itoa ---\n");
+
+    // MEDIUM LEVEL
+    eval_itoa("Standard positive single digit", 1, 7);
+    eval_itoa("Standard positive multi-digit number", 2, 1337);
+    eval_itoa("Standard negative multi-digit number", 3, -4242);
+    eval_itoa("The absolute neutral zero point", 4, 0);
+    eval_itoa("Large positive integer value block", 5, 100003);
+
+    // HARD LEVEL (Triggers extreme boundary allocations)
+    eval_itoa("Exact positive ceiling value matching INT_MAX", 6, INT_MAX);
+    eval_itoa("Exact negative floor value matching INT_MIN (The Trap)", 7, INT_MIN);
+    eval_itoa("Small negative value threshold edge", 8, -1);
+    eval_itoa("Large scale round multi-zero layout", 9, 2000000000);
+    eval_itoa("Large scale round negative multi-zero layout", 10, -2000000000);
+}
+
 int main(void)
 {
-    test_substr();      printf("---------------------------------------\n\n");
-    test_strjoin();     printf("---------------------------------------\n\n");
-    test_strtrim();     printf("---------------------------------------\n\n");
+    test_substr();    printf("---------------------------------------\n\n");
+    test_strjoin();   printf("---------------------------------------\n\n");
+    test_strtrim();   printf("---------------------------------------\n\n");
     test_split();     printf("---------------------------------------\n\n");
+    test_itoa();      printf("---------------------------------------\n\n");
 
     printf("\033[34mPART 2 - ADDITIONAL CONSTRAINTS RUN COMPLETE.\033[0m\n");
     return (0);
