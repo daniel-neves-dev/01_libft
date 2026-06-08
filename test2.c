@@ -306,6 +306,60 @@ void    eval_strmapi(const char *name, int num, const char *s, char (*f)(unsigne
         free(std_res);
 }
 
+// Mock function 1: Modifies character to uppercase in-place (ignoring index)
+void mock_iter_toupper(unsigned int i, char *c)
+{
+    (void)i;
+    if (*c >= 'a' && *c <= 'z')
+        *c -= 32;
+}
+
+// Mock function 2: Shifts character value based on its index position in-place
+void mock_iter_index_shift(unsigned int i, char *c)
+{
+    *c = *c + (i % 3);
+}
+
+void    eval_striteri(const char *name, int num, const char *s, void (*f)(unsigned int, char*))
+{
+    char *user_buf = NULL;
+    char *std_buf = NULL;
+    int match = 0;
+
+    if (s)
+    {
+        user_buf = strdup(s);
+        std_buf = strdup(s);
+    }
+
+    if (user_buf && std_buf && f)
+    {
+        // Run your library in-place modification function
+        ft_striteri(user_buf, f);
+
+        // Run baseline behavioral twin simulation loop
+        unsigned int i = 0;
+        while (std_buf[i])
+        {
+            f(i, &std_buf[i]);
+            i++;
+        }
+
+        match = (strcmp(user_buf, std_buf) == 0);
+    }
+    else if (!s)
+    {
+        // Safe protection boundary testing for NULL strings if function handles it
+        ft_striteri(NULL, f);
+        match = 1;
+    }
+
+    print_result(name, num, match);
+
+    if (user_buf) free(user_buf);
+    if (std_buf)  free(std_buf);
+}
+
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
@@ -430,6 +484,28 @@ void test_strmapi(void)
     eval_strmapi("Massive 5000 item string transformation array", 10, block_5k, mock_index_shift);
 }
 
+void test_striteri(void)
+{
+    printf("--- TESTING ft_striteri ---\n");
+
+    // MEDIUM LEVEL (Using in-place toupper mock)
+    eval_striteri("Iterate lowercase to uppercase in-place", 1, "hello", mock_iter_toupper);
+    eval_striteri("Iterate mixed strings with numerical values", 2, "42Norminette", mock_iter_toupper);
+    eval_striteri("Iterate a single token isolated character", 3, "q", mock_iter_toupper);
+    eval_striteri("Iterate sentence padding with space structures", 4, "x y ! z", mock_iter_toupper);
+    eval_striteri("Iterate string with non-alpha numbers", 5, "98765", mock_iter_toupper);
+
+    // HARD LEVEL (Testing index references and empty parameters)
+    eval_striteri("In-place index transformation mapping calculation", 6, "ccccc", mock_iter_index_shift);
+    eval_striteri("In-place index shift on longer sentences", 7, "The 42 Network", mock_iter_index_shift);
+    eval_striteri("Iterate inside an empty string component \"\"", 8, "", mock_iter_toupper);
+    eval_striteri("In-place index shift inside empty string", 9, "", mock_iter_index_shift);
+
+    char block_5k[5001];
+    memset(block_5k, 'b', 5000); block_5k[5000] = '\0';
+    eval_striteri("Massive 5000 item string block traversal check", 10, block_5k, mock_iter_index_shift);
+}
+
 int main(void)
 {
     test_substr();    printf("---------------------------------------\n\n");
@@ -438,6 +514,7 @@ int main(void)
     test_split();     printf("---------------------------------------\n\n");
     test_itoa();      printf("---------------------------------------\n\n");
     test_strmapi();   printf("---------------------------------------\n\n");
+    test_striteri();  printf("---------------------------------------\n\n");
 
     printf("\033[34mPART 2 - ADDITIONAL CONSTRAINTS RUN COMPLETE.\033[0m\n");
     return (0);
