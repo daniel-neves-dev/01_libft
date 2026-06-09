@@ -434,6 +434,57 @@ void    eval_putstr_fd(const char *name, int num, char *s)
     print_result(name, num, match);
 }
 
+void    eval_putendl_fd(const char *name, int num, char *s)
+{
+    int     pipe_fds[2];
+    int     match = 0;
+
+    if (!s)
+    {
+        // Safe fallback protection execution if your library shields NULL vectors
+        ft_putendl_fd(NULL, 1);
+        print_result(name, num, 1);
+        return ;
+    }
+
+    size_t s_len = strlen(s);
+    size_t expected_bytes = s_len + 1; // String length + 1 byte for '\n'
+
+    if (pipe(pipe_fds) == 0)
+    {
+        // Write the string and newline to our pipe stream input channel
+        ft_putendl_fd(s, pipe_fds[1]);
+        close(pipe_fds[1]); // Close write end to stop streaming loops
+
+        // Allocate a reading layout block matching the expected package footprint
+        char *read_buf = malloc(expected_bytes + 1);
+        if (read_buf)
+        {
+            memset(read_buf, 0, expected_bytes + 1);
+
+            // Extract the stream transmission data bytes
+            ssize_t bytes_read = read(pipe_fds[0], read_buf, expected_bytes);
+
+            // Verify total bytes written captures the newline byte payload correctly
+            if ((size_t)bytes_read == expected_bytes)
+            {
+                // Verify the final character is explicitly a newline
+                if (read_buf[expected_bytes - 1] == '\n')
+                {
+                    // Strip the newline temporarily to assert string string equality
+                    read_buf[expected_bytes - 1] = '\0';
+                    if (strcmp(read_buf, s) == 0)
+                        match = 1;
+                }
+            }
+            free(read_buf);
+        }
+        close(pipe_fds[0]);
+    }
+
+    print_result(name, num, match);
+}
+
 void test_substr(void)
 {
     printf("--- TESTING ft_substr ---\n");
@@ -618,6 +669,29 @@ void test_putstr_fd(void)
     eval_putstr_fd("Write a massive 5000 character stream block", 9, block_5k);
 
     eval_putstr_fd("Write alternating high value unsigned char lines", 10, "\x80\xFF\x42");
+}
+
+void test_putendl_fd(void)
+{
+    printf("--- TESTING ft_putendl_fd ---\n");
+
+    // MEDIUM LEVEL
+    eval_putendl_fd("Write a standard word string with newline", 1, "Hello");
+    eval_putendl_fd("Write a complete sentence line structure", 2, "42 School assignment testing");
+    eval_putendl_fd("Write a numeric digit sequence string block", 3, "987654321");
+    eval_putendl_fd("Write an isolated token character string line", 4, "z");
+    eval_putendl_fd("Write a string sequence full of special symbols", 5, "&&--++##");
+
+    // HARD LEVEL (Testing boundary strings and raw limits)
+    eval_putendl_fd("Write a completely empty vacant string \"\"", 6, "");
+    eval_putendl_fd("Write string containing internal formatting characters", 7, "\t\r\v\f");
+    eval_putendl_fd("Write an early null split hidden string segment", 8, "Split\0Line");
+
+    char block_5k[5001];
+    memset(block_5k, 'e', 5000); block_5k[5000] = '\0';
+    eval_putendl_fd("Write a massive 5000 byte long streaming block", 9, block_5k);
+
+    eval_putendl_fd("Write high value unsigned character layouts", 10, "\xAA\xBB\xCC");
 }
 
 int main(void)
