@@ -363,6 +363,36 @@ void    eval_striteri(const char *name, int num, const char *s, void (*f)(unsign
 // =============================================================================
 // TEST SUITE SUITES
 // =============================================================================
+void    eval_putchar_fd(const char *name, int num, char c)
+{
+    int     pipe_fds[2];
+    char    read_buf = 0;
+    int     match = 0;
+
+    // Open a system pipe ([0] is read end, [1] is write end)
+    if (pipe(pipe_fds) == 0)
+    {
+        // Run your library function writing to the pipe's input channel
+        ft_putchar_fd(c, pipe_fds[1]);
+
+        // Close the write end immediately so read doesn't block infinitely
+        close(pipe_fds[1]);
+
+        // Read the intercepted character back out of the pipe's output channel
+        ssize_t bytes_read = read(pipe_fds[0], &read_buf, 1);
+
+        // Verify exactly 1 byte was read and it matches the input character
+        if (bytes_read == 1 && read_buf == c)
+            match = 1;
+
+        // Clean up the remaining file descriptor handle
+        close(pipe_fds[0]);
+    }
+
+    print_result(name, num, match);
+}
+
+
 void test_substr(void)
 {
     printf("--- TESTING ft_substr ---\n");
@@ -506,15 +536,35 @@ void test_striteri(void)
     eval_striteri("Massive 5000 item string block traversal check", 10, block_5k, mock_iter_index_shift);
 }
 
+void test_putchar_fd(void)
+{
+    printf("--- TESTING ft_putchar_fd ---\n");
+
+    // MEDIUM LEVEL
+    eval_putchar_fd("Write standard lowercase character 'a'", 1, 'a');
+    eval_putchar_fd("Write standard uppercase character 'Z'", 2, 'Z');
+    eval_putchar_fd("Write a standard numeric character '5'", 3, '5');
+    eval_putchar_fd("Write a standard space spacing character", 4, ' ');
+    eval_putchar_fd("Write a basic punctuation punctuation mark '*'", 5, '*');
+
+    // HARD LEVEL (Testing control characters and boundary conditions)
+    eval_putchar_fd("Write a null terminator literal character \\0", 6, '\0');
+    eval_putchar_fd("Write a newline escape control character \\n", 7, '\n');
+    eval_putchar_fd("Write a horizontal tab escape character \\t", 8, '\t');
+    eval_putchar_fd("Write an extended ASCII boundary byte (128)", 9, (char)128);
+    eval_putchar_fd("Write an alternative high boundary byte (255)", 10, (char)255);
+}
+
 int main(void)
 {
-    test_substr();    printf("---------------------------------------\n\n");
-    test_strjoin();   printf("---------------------------------------\n\n");
-    test_strtrim();   printf("---------------------------------------\n\n");
-    test_split();     printf("---------------------------------------\n\n");
-    test_itoa();      printf("---------------------------------------\n\n");
-    test_strmapi();   printf("---------------------------------------\n\n");
-    test_striteri();  printf("---------------------------------------\n\n");
+    test_substr();      printf("---------------------------------------\n\n");
+    test_strjoin();     printf("---------------------------------------\n\n");
+    test_strtrim();     printf("---------------------------------------\n\n");
+    test_split();       printf("---------------------------------------\n\n");
+    test_itoa();        printf("---------------------------------------\n\n");
+    test_strmapi();     printf("---------------------------------------\n\n");
+    test_striteri();    printf("---------------------------------------\n\n");
+    test_putchar_fd();  printf("---------------------------------------\n\n");
 
     printf("\033[34mPART 2 - ADDITIONAL CONSTRAINTS RUN COMPLETE.\033[0m\n");
     return (0);
