@@ -485,6 +485,43 @@ void    eval_putendl_fd(const char *name, int num, char *s)
     print_result(name, num, match);
 }
 
+void    eval_putnbr_fd(const char *name, int num, int n)
+{
+    int     pipe_fds[2];
+    int     match = 0;
+    char    expected_str[32];
+
+    // Generate accurate reference baseline comparison footprint
+    sprintf(expected_str, "%d", n);
+    size_t expected_bytes = strlen(expected_str);
+
+    if (pipe(pipe_fds) == 0)
+    {
+        // Execute library function writing to our pipe stream input channel
+        ft_putnbr_fd(n, pipe_fds[1]);
+        close(pipe_fds[1]); // Close write end to release read hooks
+
+        // Allocate a temporary reading block matching the expected string footprint
+        char *read_buf = malloc(expected_bytes + 1);
+        if (read_buf)
+        {
+            memset(read_buf, 0, expected_bytes + 1);
+
+            // Collect the character stream bytes
+            ssize_t bytes_read = read(pipe_fds[0], read_buf, expected_bytes);
+
+            // Verify written data size and content equality match perfectly
+            if ((size_t)bytes_read == expected_bytes && strcmp(read_buf, expected_str) == 0)
+                match = 1;
+
+            free(read_buf);
+        }
+        close(pipe_fds[0]);
+    }
+
+    print_result(name, num, match);
+}
+
 void test_substr(void)
 {
     printf("--- TESTING ft_substr ---\n");
@@ -694,6 +731,26 @@ void test_putendl_fd(void)
     eval_putendl_fd("Write high value unsigned character layouts", 10, "\xAA\xBB\xCC");
 }
 
+
+void test_putnbr_fd(void)
+{
+    printf("--- TESTING ft_putnbr_fd ---\n");
+
+    // MEDIUM LEVEL
+    eval_putnbr_fd("Write standard positive single digit", 1, 5);
+    eval_putnbr_fd("Write standard positive multi-digit integer", 2, 4242);
+    eval_putnbr_fd("Write standard negative multi-digit integer", 3, -1337);
+    eval_putnbr_fd("Write the neutral absolute zero mark", 4, 0);
+    eval_putnbr_fd("Write a large round multi-zero layout", 5, 100000);
+
+    // HARD LEVEL (Triggers critical underflow/overflow bounds)
+    eval_putnbr_fd("Write absolute ceiling value matching INT_MAX", 6, INT_MAX);
+    eval_putnbr_fd("Write absolute floor value matching INT_MIN (The Trap)", 7, INT_MIN);
+    eval_putnbr_fd("Write small negative threshold unit", 8, -1);
+    eval_putnbr_fd("Write large scale maximum positive dimension", 9, 2147483646);
+    eval_putnbr_fd("Write deep negative offset limit dimension", 10, -2147483647);
+}
+
 int main(void)
 {
     test_substr();      printf("---------------------------------------\n\n");
@@ -705,6 +762,8 @@ int main(void)
     test_striteri();    printf("---------------------------------------\n\n");
     test_putchar_fd();  printf("---------------------------------------\n\n");
     test_putstr_fd();   printf("---------------------------------------\n\n");
+    test_putendl_fd();  printf("---------------------------------------\n\n");
+    test_putnbr_fd();   printf("---------------------------------------\n\n");
 
     printf("\033[34mPART 2 - ADDITIONAL CONSTRAINTS RUN COMPLETE.\033[0m\n");
     return (0);

@@ -16,8 +16,6 @@ void	ft_putnbr_fd(int n, int fd)
 {
 	long	numb;
 
-	if (!n)
-		return ;
 	numb = n;
 	if (numb < 0)
 	{
@@ -25,8 +23,6 @@ void	ft_putnbr_fd(int n, int fd)
 		ft_putchar_fd('-', fd);
 	}
 	if (numb > 9)
-	{
-		ft_putnbr_fd(numb / 10 ,fd);
-	}
+		ft_putnbr_fd(numb / 10, fd);
 	ft_putchar_fd(numb % 10 + '0', fd);
 }
