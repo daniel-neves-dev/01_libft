@@ -392,6 +392,47 @@ void    eval_putchar_fd(const char *name, int num, char c)
     print_result(name, num, match);
 }
 
+void    eval_putstr_fd(const char *name, int num, char *s)
+{
+    int     pipe_fds[2];
+    int     match = 0;
+
+    // Handle a potential NULL edge case context safely if your library protects against it
+    if (!s)
+    {
+        ft_putstr_fd(NULL, 1);
+        print_result(name, num, 1);
+        return ;
+    }
+
+    size_t s_len = strlen(s);
+
+    if (pipe(pipe_fds) == 0)
+    {
+        // Write the string to the input channel of our pipe
+        ft_putstr_fd(s, pipe_fds[1]);
+        close(pipe_fds[1]); // Close write end so read doesn't block
+
+        // Allocate a temporary reading block matching the expected string footprint
+        char *read_buf = malloc(s_len + 1);
+        if (read_buf)
+        {
+            memset(read_buf, 0, s_len + 1);
+
+            // Read the stream contents back out
+            ssize_t bytes_read = read(pipe_fds[0], read_buf, s_len);
+
+            // Verify total bytes written matches string length and data integrity matches
+            if ((size_t)bytes_read == s_len && strcmp(read_buf, s) == 0)
+                match = 1;
+
+            free(read_buf);
+        }
+        close(pipe_fds[0]);
+    }
+
+    print_result(name, num, match);
+}
 
 void test_substr(void)
 {
@@ -553,6 +594,30 @@ void test_putchar_fd(void)
     eval_putchar_fd("Write a horizontal tab escape character \\t", 8, '\t');
     eval_putchar_fd("Write an extended ASCII boundary byte (128)", 9, (char)128);
     eval_putchar_fd("Write an alternative high boundary byte (255)", 10, (char)255);
+
+}
+
+void test_putstr_fd(void)
+{
+    printf("--- TESTING ft_putstr_fd ---\n");
+
+    // MEDIUM LEVEL
+    eval_putstr_fd("Write a standard short word string", 1, "Hello");
+    eval_putstr_fd("Write a full sentence layout with spaces", 2, "The 42 school foundation!");
+    eval_putstr_fd("Write a purely numeric digital sequence string", 3, "1234567890");
+    eval_putstr_fd("Write an isolated single token character string", 4, "x");
+    eval_putstr_fd("Write a string filled with unique code symbols", 5, "!@#$%^&*()");
+
+    // HARD LEVEL (Testing bounds, control sequences, and memory chunks)
+    eval_putstr_fd("Write a completely vacant empty string \"\"", 6, "");
+    eval_putstr_fd("Write an escape sequence layout formatting block", 7, "\n\t\r\v\f");
+    eval_putstr_fd("Write an early terminated hidden string segment", 8, "Hello\0World");
+
+    char block_5k[5001];
+    memset(block_5k, 'p', 5000); block_5k[5000] = '\0';
+    eval_putstr_fd("Write a massive 5000 character stream block", 9, block_5k);
+
+    eval_putstr_fd("Write alternating high value unsigned char lines", 10, "\x80\xFF\x42");
 }
 
 int main(void)
@@ -565,6 +630,7 @@ int main(void)
     test_strmapi();     printf("---------------------------------------\n\n");
     test_striteri();    printf("---------------------------------------\n\n");
     test_putchar_fd();  printf("---------------------------------------\n\n");
+    test_putstr_fd();   printf("---------------------------------------\n\n");
 
     printf("\033[34mPART 2 - ADDITIONAL CONSTRAINTS RUN COMPLETE.\033[0m\n");
     return (0);
