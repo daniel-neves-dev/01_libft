@@ -1,9 +1,3 @@
-// TESTE MEMORY LEAK
-//#ifdef TEST_MODE
-//# define malloc tracked_malloc
-//# define free tracked_free
-//# endif
-//
 
 #ifndef LIBFT_H
 # define LIBFT_H
