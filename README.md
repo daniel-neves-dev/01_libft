@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by <dneves-d>.*
+*This project has been created as part of the 42 curriculum by dneves-d.*
 
 # Libft - Your very first own library
 
