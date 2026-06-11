@@ -1,14 +1,53 @@
 *This project has been created as part of the 42 curriculum by dneves-d.*
+<h1 align="center">Libft</h1>
 
-# Libft - Your very first own library
+<p align="center">
+  <b>The foundational framework of the 42 curriculum.</b><br>
+  An implementation of a custom C library replicating standard system behaviors and dynamic data structures.
+</p>
 
-## Description
-The **Libft** project is a foundational assignment in the 42 São Paulo curriculum. Its primary goal is to re-code a subset of the standard C library (`libc`) functions, alongside additional utility functions and data structure manipulations using linked lists.
-
-By implementing these functions from scratch, this project provides a deep, mechanical understanding of memory allocation, pointer arithmetic, string manipulation, and standard imperative programming patterns in C. The resulting archive file (`libft.a`) serves as a highly useful, personal utility library utilized throughout future C assignments in the school curriculum.
+<p align="center">
+  <img src="https://img.shields.io/badge/Language-C-00599C?style=flat-square&logo=c&logoColor=white" alt="Language" />
+  <img src="https://img.shields.io/badge/Build-Makefile-9cc2e5?style=flat-square&logo=gnu&logoColor=black" alt="Build" />
+  <img src="https://img.shields.io/badge/Norm-v3-success?style=flat-square" alt="Norm" />
+</p>
 
 ---
 
+## 📋 Description
+The **Libft** project serves as the introduction to the imperative programming pipeline at 42. Its objective is to re-code a core selection of functions from the standard C library (`libc`), alongside a set of custom algorithmic string utilities and linked list manipulation structures.
+
+Developing this library from scratch enforces a rigorous understanding of memory allocation models, raw pointer manipulation, boundary checking, and compilation flags. The compiled static archive (`libft.a`) acts as a persistent resource used across subsequent school assignments (such as *get_next_line*, *ft_printf*, and *push_swap*).
+
+---
+
+## 🛠️ Instructions
+
+### Prerequisites
+* A standard Unix-like environment (Linux, macOS)
+* A C compiler (`cc`)
+* GNU `make` and `ar` utilities
+
+### Installation & Compilation
+Clone your repository and navigate to the root directory. The project is managed by a strict `Makefile` configured with `-Wall -Wextra -Werror` to prevent errors or illegal relinking routines.
+
+```bash
+# Compile all mandatory libc and additional utility functions
+make
+
+# Compile mandatory functions along with bonus linked-list structures
+make bonus
+
+# Remove intermediate object files (.o) safely
+make clean
+
+# Purge all object files and the final libft.a static archive
+make fclean
+
+# Reset the build pipeline completely
+make re
+```
+🗂️ Library Architecture & LayoutThe toolkit functions are separated logically across three explicit components:  
 1. Libc Functions (Part 1)
 
    Re-implementations of classic functions from <string.h>, <ctype.h>, and <stdlib.h>. They adhere exactly to their behavior described in standard system man pages:
@@ -43,41 +82,14 @@ By implementing these functions from scratch, this project provides a deep, mech
 
 - ft_lstnew, ft_lstadd_front, ft_lstsize, ft_lstlast, ft_lstadd_back, ft_lstdelone, ft_lstclear, ft_lstiter, ft_lstmap.
 
-## Instructions
+----
 
-### Prerequisites
-To compile and test this library, you require a C compiler (`gcc`) and the standard `ar` and `make` utilities.
+📚 Resources & Learning Footprint
+Industry Documentation & StandardizationsGNU C Library Manual Reference   Linux Kernel Standard Base Specifications / System Man Pages
 
-### Compilation
-All compilation files are managed through the provided `Makefile` located at the root of the repository. The Makefile compiles with standard safety flags (`-Wall -Wextra -Werror`) and does not perform unnecessary relinking.
+AI Usage & Integrity Framework
+In accordance with Chapters III and V of the project guidelines, AI systems were exclusively configured as a peer-dialogue conceptual scaffold rather than an automated writing tool:
 
-* **Compile mandatory functions:**
-    ```bash
-    make
-    ```
-  or
-    ```bash
-    make all
-    ```
-* **Compile bonus functions (Linked Lists):**
-    ```bash
-    make bonus
-    ```
-* **Clean object files:**
-    ```bash
-    make clean
-    ```
-* **Clean object files and the compiled library archive:**
-    ```bash
-    make fclean
-    ```
-* **Re-compile the entire library from scratch:**
-    ```bash
-    make re
-    ```
+Applied Tasks & Context:
 
-### Usage
-To incorporate `libft` into your own development projects, include the header file in your C source files and link the static library during compilation:
-
-```c
-#include "libft.h"
+Behavioral Architecture: Dissecting the byte-safety overlap differences between ft_memcpy and ft_memmove allocations.  Edge-case Auditing: Outlining theoretical risk horizons for multi-allocation leak scenarios inside ft_split and unique address allocation layouts expected by ft_calloc(0, 0) parameters.  Markup Organization: Enhancing presentation formatting hierarchies and data visualizations for repository indexing.  Engineering Countermeasures: All core logic definitions, loop statements, structural conversions, and variable configurations were conceptualized and written manually. Logic behaviors were verified via comprehensive off-repo unit test suites to guarantee a rock-solid mechanical understanding prior to manual peer defenses and closed-network examinations.  
