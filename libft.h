@@ -2,6 +2,12 @@
 #ifndef LIBFT_H
 # define LIBFT_H
 
+typedef struct s_list
+{
+	void			*content;
+	struct s_list	*next;
+}					t_list;
+
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -48,4 +54,5 @@ void	ft_putendl_fd(char *s, int fd);
 void	ft_putnbr_fd(int n, int fd);
 
 // part 3
+t_list	*ft_lstnew(void *content);
 #endif

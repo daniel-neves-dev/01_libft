@@ -524,7 +524,7 @@ void    eval_putnbr_fd(const char *name, int num, int n)
 
 void test_substr(void)
 {
-    printf("--- TESTING ft_substr ---\n");
+    printf("\n--- TESTING ft_substr ---\n");
     const char *str = "The 42 school foundation!";
 
     // MEDIUM LEVEL

@@ -381,7 +381,7 @@ void    eval_strdup(const char *name, int num, const char *s)
 
 void test_isalpha(void)
 {
-    printf("--- TESTING ft_isalpha ---\n");
+    printf("\n--- TESTING ft_isalpha ---\n");
     // MEDIUM LEVEL
     eval_is_functions("Space character check", 1, ft_isalpha, isalpha, ' ');
     eval_is_functions("Digit 5 check", 2, ft_isalpha, isalpha, '5');
