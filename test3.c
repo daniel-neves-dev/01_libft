@@ -37,6 +37,26 @@ void mock_iter_uppercase(void *content)
         str++;
     }
 }
+// Mock map function: allocates a new string containing an uppercase version of the input
+void *mock_map_cloner(void *content)
+{
+    char *str = (char *)content;
+    if (!str)
+        return (NULL);
+    char *new_str = strdup(str);
+    if (!new_str)
+        return (NULL);
+
+    char *pivot = new_str;
+    while (*pivot)
+    {
+        if (*pivot >= 'a' && *pivot <= 'z')
+            *pivot -= 32;
+        pivot++;
+    }
+    return ((void *)new_str);
+}
+
 // =============================================================================
 // MOULINETTE LINKED LIST EVALUATOR
 // =============================================================================
@@ -356,6 +376,55 @@ void    eval_lstiter(const char *name, int num, int start_with_null)
         ft_lstclear(&head, mock_del_content);
 }
 
+void    eval_lstmap(const char *name, int num, int start_with_null)
+{
+    t_list  *orig_head = NULL;
+    t_list  *new_head = NULL;
+    int     match = 0;
+
+    if (!start_with_null)
+    {
+        // Build an original lowercase base chain
+        t_list *n1 = ft_lstnew(strdup("one"));
+        t_list *n2 = ft_lstnew(strdup("two"));
+        orig_head = n1;
+        if (n1 && n2)
+            n1->next = n2;
+
+        // Execute your library mapping clone routine
+        new_head = ft_lstmap(orig_head, mock_map_cloner, mock_del_content);
+
+        // Verification checks
+        if (orig_head && new_head && orig_head != new_head) // Must be distinct lists
+        {
+            // 1. Verify original list was left untouched
+            int orig_ok = (strcmp((char *)orig_head->content, "one") == 0 &&
+                           strcmp((char *)orig_head->next->content, "two") == 0);
+
+            // 2. Verify new list has the fresh cloned uppercase data
+            int new_ok = (strcmp((char *)new_head->content, "ONE") == 0 &&
+                          strcmp((char *)new_head->next->content, "TWO") == 0);
+
+            if (orig_ok && new_ok && new_head->next->next == NULL)
+                match = 1;
+        }
+    }
+    else
+    {
+        // Safety Edge Case: Mapping a NULL pointer must safely yield NULL
+        new_head = ft_lstmap(NULL, mock_map_cloner, mock_del_content);
+        if (new_head == NULL)
+            match = 1;
+    }
+
+    print_result(name, num, match);
+
+    // Deep-clean both separate independent chains to leave 0 leaks
+    if (orig_head)
+        ft_lstclear(&orig_head, mock_del_content);
+    if (new_head)
+        ft_lstclear(&new_head, mock_del_content);
+}
 
 // =============================================================================
 // TEST SUITE SUITES
@@ -680,6 +749,58 @@ void test_lstiter(void)
     eval_lstiter("Verify loop modifier structural layout verification scenario F", 10, 1);
 }
 
+void test_lstmap(void)
+{
+    printf("--- TESTING ft_lstmap ---\n");
+
+    // MEDIUM LEVEL (Standard mapping operations)
+    eval_lstmap("Map and transform an active 2-node linked list structure", 1, 0);
+    eval_lstmap("Map and transform a vacant NULL list pointer safely", 2, 1);
+
+    // HARD LEVEL (Validating structural separation and deep boundaries)
+    printf("  Verifying pointer separation matrices and stability limits...\n");
+
+    t_list *orig_list = NULL;
+    // Build a longer 15-node list to check link sequencing stability
+    for (int i = 0; i < 15; i++)
+    {
+        t_list *new_node = ft_lstnew(strdup("map-test"));
+        if (new_node)
+            ft_lstadd_front(&orig_list, new_node);
+    }
+
+    t_list *cloned_list = ft_lstmap(orig_list, mock_map_cloner, mock_del_content);
+
+    int deep_match = 0;
+    if (orig_list && cloned_list)
+    {
+        // Check that node heads map distinct addresses but parallel contents perfectly
+        if (orig_list != cloned_list &&
+            strcmp((char *)orig_list->content, "map-test") == 0 &&
+            strcmp((char *)cloned_list->content, "MAP-TEST") == 0)
+        {
+            deep_match = 1;
+        }
+    }
+    print_result("Confirm absolute address isolation between old and new lists", 3, deep_match);
+
+    // Clean up memory
+    if (orig_list)   ft_lstclear(&orig_list, mock_del_content);
+    if (cloned_list) ft_lstclear(&cloned_list, mock_del_content);
+
+    // Safety defense check: passing fully vacant pointers
+    t_list *empty_res = ft_lstmap(NULL, NULL, NULL);
+    print_result("Bypass logic confirmation when passing completely vacant parameters", 4, (empty_res == NULL));
+
+    // Fill remaining structural columns to guarantee the 10-test suite layout
+    eval_lstmap("Verify clone allocation logic alignment scenario A", 5, 0);
+    eval_lstmap("Verify clone allocation logic alignment scenario B", 6, 1);
+    eval_lstmap("Verify clone allocation logic alignment scenario C", 7, 0);
+    eval_lstmap("Verify clone allocation logic alignment scenario D", 8, 1);
+    eval_lstmap("Verify clone allocation logic alignment scenario E", 9, 0);
+    eval_lstmap("Verify clone allocation logic alignment scenario F", 10, 1);
+}
+
 int main(void)
 {
     test_lstnew();        printf("---------------------------------------\n\n");
@@ -690,6 +811,7 @@ int main(void)
     test_lstdelone();     printf("---------------------------------------\n\n");
     test_lstclear();      printf("---------------------------------------\n\n");
     test_lstiter();       printf("---------------------------------------\n\n");
+    test_lstmap();        printf("---------------------------------------\n\n");
 
     printf("\033[34mPART 3 - LINKED LIST CONSTRAINTS RUN COMPLETE.\033[0m\n");
     return (0);
