@@ -1,26 +1,25 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_memset.c                                        :+:      :+:    :+:   */
+/*   ft_lstnew.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dneves-d <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/25 09:07:21 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/25 10:35:45 by dneves-d         ###   ########.fr       */
+/*   Created: 2026/06/12 09:30:20 by dneves-d          #+#    #+#             */
+/*   Updated: 2026/06/12 09:30:23 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	*ft_memset(void *s, int c, size_t n)
+t_list	*ft_lstnew(void *content)
 {
-	size_t	i;
+	t_list	*new_node;
 
-	i = 0;
-	while (i < n)
-	{
-		((unsigned char *)s)[i] = ((unsigned char)c);
-		i++;
-	}
-	return (s);
+	new_node = (t_list *)malloc(sizeof(t_list));
+	if (!new_node)
+		return (NULL);
+	new_node->content = content;
+	new_node->next = NULL;
+	return (new_node);
 }

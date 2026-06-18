@@ -1,26 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_memset.c                                        :+:      :+:    :+:   */
+/*   ft_putchar_fd.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dneves-d <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/25 09:07:21 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/25 10:35:45 by dneves-d         ###   ########.fr       */
+/*   Created: 2026/06/09 08:16:47 by dneves-d          #+#    #+#             */
+/*   Updated: 2026/06/09 08:16:50 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	*ft_memset(void *s, int c, size_t n)
+void	ft_putchar_fd(char c, int fd)
 {
-	size_t	i;
-
-	i = 0;
-	while (i < n)
-	{
-		((unsigned char *)s)[i] = ((unsigned char)c);
-		i++;
-	}
-	return (s);
+	if (fd < 0)
+		return ;
+	write(fd, &c, 1);
 }

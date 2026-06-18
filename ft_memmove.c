@@ -6,58 +6,46 @@
 /*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/25 10:39:24 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/25 12:39:26 by dneves-d         ###   ########.fr       */
+/*   Updated: 2026/05/27 16:00:00 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	ft_write(unsigned char *dt, const unsigned char	*dtv, size_t n)
+void	ft_write(unsigned char *dest, const unsigned char	*src, size_t n)
 {
 	size_t	i;
 
 	i = 0;
-	if (dt > dtv)
+	if (dest > src)
+	{
+		while (n > 0)
 		{
-			while (n > 0)
-			{
-				dt[n] = dtv[n];
-				n--;
-			}
+			n--;
+			dest[n] = src[n];
 		}
-		else
+	}
+	else
+	{
+		while (i < n)
 		{
-			while (i < n)
-			{
-				dt[i] = dtv[i];
-				i++;
-			}
+			dest[i] = src[i];
+			i++;
 		}
+	}
 }
 
 void	*ft_memmove(void *dest, const void *src, size_t n)
 {
 	unsigned char		*dt;
-	const unsigned char	*dtv;
+	const unsigned char	*sc;
 
 	if (!dest && !src)
 		return (NULL);
+	if (dest == src || n == 0)
+		return (dest);
 	dt = (unsigned char *)dest;
-	dtv = (const unsigned char *)src;
-	ft_write(dt, dtv, n);
-	return (dt);
-}
-
-#include <stdio.h>
-#include <string.h>
-
-int main() {
-    char str[] = "ABCDEFGH";
-
-    // Copy "ABCDE" starting at index 0 to index 2
-    // Resulting overlap: [A, B, A, B, C, D, E, H]
-    memmove(str + 2, str, 5);
-
-    printf("Result: %s\n", str); // Output: ABABCDEH
-    return 0;
+	sc = (const unsigned char *)src;
+	ft_write(dt, sc, n);
+	return (dest);
 }

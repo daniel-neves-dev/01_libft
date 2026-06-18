@@ -1,26 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_memset.c                                        :+:      :+:    :+:   */
+/*   ft_putnbr_fd.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
+/*   By: dneves-d <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/05/25 09:07:21 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/25 10:35:45 by dneves-d         ###   ########.fr       */
+/*   Created: 2026/06/09 11:58:12 by dneves-d          #+#    #+#             */
+/*   Updated: 2026/06/09 11:58:14 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-void	*ft_memset(void *s, int c, size_t n)
+void	ft_putnbr_fd(int n, int fd)
 {
-	size_t	i;
+	long	numb;
 
-	i = 0;
-	while (i < n)
+	numb = n;
+	if (numb < 0)
 	{
-		((unsigned char *)s)[i] = ((unsigned char)c);
-		i++;
+		numb = -numb;
+		ft_putchar_fd('-', fd);
 	}
-	return (s);
+	if (numb > 9)
+		ft_putnbr_fd(numb / 10, fd);
+	ft_putchar_fd(numb % 10 + '0', fd);
 }
