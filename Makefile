@@ -26,6 +26,5 @@ clean:
 fclean: clean
 	rm -f $(NAME)
 re:	fclean clean all
-	gcc -Wall -Wextra -Werror test3.c libft.a
-	./a.out
+	
 .PHONY:	re clean fclean

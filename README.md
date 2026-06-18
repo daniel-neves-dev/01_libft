@@ -47,7 +47,7 @@ make fclean
 # Reset the build pipeline completely
 make re
 ```
-🗂️ Library Architecture & LayoutThe toolkit functions are separated logically across three explicit components:  
+🗂️ Library Architecture & LayoutThe toolkit functions are separated logically across three explicit components:
 1. Libc Functions (Part 1)
 
    Re-implementations of classic functions from <string.h>, <ctype.h>, and <stdlib.h>. They adhere exactly to their behavior described in standard system man pages:
@@ -89,7 +89,3 @@ Industry Documentation & StandardizationsGNU C Library Manual Reference   Linux 
 
 AI Usage & Integrity Framework
 In accordance with Chapters III and V of the project guidelines, AI systems were exclusively configured as a peer-dialogue conceptual scaffold rather than an automated writing tool:
-
-Applied Tasks & Context:
-
-Behavioral Architecture: Dissecting the byte-safety overlap differences between ft_memcpy and ft_memmove allocations.  Edge-case Auditing: Outlining theoretical risk horizons for multi-allocation leak scenarios inside ft_split and unique address allocation layouts expected by ft_calloc(0, 0) parameters.  Markup Organization: Enhancing presentation formatting hierarchies and data visualizations for repository indexing.  Engineering Countermeasures: All core logic definitions, loop statements, structural conversions, and variable configurations were conceptualized and written manually. Logic behaviors were verified via comprehensive off-repo unit test suites to guarantee a rock-solid mechanical understanding prior to manual peer defenses and closed-network examinations.  

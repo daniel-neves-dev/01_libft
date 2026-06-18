@@ -6,7 +6,7 @@
 /*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/25 10:00:51 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/05/25 10:37:03 by dneves-d         ###   ########.fr       */
+/*   Updated: 2026/06/15 08:58:38 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,5 +14,5 @@
 
 void	ft_bzero(void *s, size_t number)
 {
-	ft_memset(s, 0,number);
+	ft_memset(s, 0, number);
 }

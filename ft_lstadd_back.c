@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_lstadd_back.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: dneves-d <marvin@42.fr>                    +#+  +:+       +#+        */
+/*   By: dneves-d <dneves-d@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/12 15:26:55 by dneves-d          #+#    #+#             */
-/*   Updated: 2026/06/12 15:26:59 by dneves-d         ###   ########.fr       */
+/*   Updated: 2026/06/15 09:31:10 by dneves-d         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ void	ft_lstadd_back(t_list **lst, t_list *new)
 {
 	t_list	*last;
 
-	if (new == NULL || lst == NULL)
+	if (lst == NULL || new == NULL)
 		return ;
 	if (*lst == NULL)
 	{
