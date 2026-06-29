@@ -25,7 +25,6 @@ Developing this library from scratch enforces a rigorous understanding of memory
 ## 🛠️ Instructions
 
 ### Prerequisites
-* A standard Unix-like environment (Linux, macOS)
 * A C compiler (`cc`)
 * GNU `make` and `ar` utilities
 
