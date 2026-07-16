@@ -1,5 +1,5 @@
 *This project has been created as part of the 42 curriculum by dneves-d.*
-<h1 align="center">📚 ibft</h1>
+<h1 align="center">📚 libft</h1>
 
 <p align="center">
   <b>The foundational framework of the 42 curriculum.</b><br>
